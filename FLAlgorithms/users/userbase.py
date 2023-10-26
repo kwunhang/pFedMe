@@ -14,7 +14,7 @@ class User:
     def __init__(self, device, id, train_data, test_data, model, batch_size = 0, learning_rate = 0, beta = 0 , lamda = 0, local_epochs = 0):
 
         self.device = device
-        self.model = copy.deepcopy(model).to(self.device)
+        self.model = copy.deepcopy(model)
         self.id = id  # integer
         self.train_samples = len(train_data)
         self.test_samples = len(test_data)
@@ -34,9 +34,6 @@ class User:
         self.local_model = copy.deepcopy(list(self.model.parameters()))
         self.persionalized_model = copy.deepcopy(list(self.model.parameters()))
         self.persionalized_model_bar = copy.deepcopy(list(self.model.parameters()))
-        # print("local:", str(self.local_model[0].is_cuda))
-        self.model.to("cpu")
-        # print("local later:", str(self.local_model[0].is_cuda))
     
     def set_parameters(self, model):
         for old_param, new_param, local_param in zip(self.model.parameters(), model.parameters(), self.local_model):
@@ -71,7 +68,6 @@ class User:
         return grads
 
     def test(self):
-        self.model.to(self.device)
         self.model.eval()
         test_acc = 0
         for x, y in self.testloaderfull:
@@ -81,11 +77,9 @@ class User:
             #@loss += self.loss(output, y)
             #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
             #print(self.id + ", Test Loss:", loss)
-        self.model.to("cpu")
         return test_acc, y.shape[0]
 
     def train_error_and_loss(self):
-        self.model.to(self.device)
         self.model.eval()
         train_acc = 0
         loss = 0
@@ -96,11 +90,9 @@ class User:
             loss += self.loss(output, y)
             #print(self.id + ", Train Accuracy:", train_acc)
             #print(self.id + ", Train Loss:", loss)
-        self.model.to("cpu")
         return train_acc, loss , self.train_samples
     
     def test_persionalized_model(self):
-        self.model.to(self.device)
         self.model.eval()
         test_acc = 0
         self.update_parameters(self.persionalized_model_bar)
@@ -112,11 +104,9 @@ class User:
             #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
             #print(self.id + ", Test Loss:", loss)
         self.update_parameters(self.local_model)
-        self.model.to("cpu")
         return test_acc, y.shape[0]
 
     def train_error_and_loss_persionalized_model(self):
-        self.model.to(self.device)
         self.model.eval()
         train_acc = 0
         loss = 0
@@ -129,7 +119,6 @@ class User:
             #print(self.id + ", Train Accuracy:", train_acc)
             #print(self.id + ", Train Loss:", loss)
         self.update_parameters(self.local_model)
-        self.model.to("cpu")
         return train_acc, loss , self.train_samples
     
     def get_next_train_batch(self):
