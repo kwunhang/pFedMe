@@ -18,7 +18,9 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
          local_epochs, optimizer, numusers, K, personal_learning_rate, times, gpu):
 
     # Get device status: Check GPU or CPU
+    # cpu = "cpu"
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
+    print("device:", device)
 
     for i in range(times):
         print("---------------Running time:------------",i)

@@ -17,7 +17,7 @@ class Server:
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.total_train_samples = 0
-        self.model = copy.deepcopy(model)
+        self.model = copy.deepcopy(model).to("cpu")
         self.users = []
         self.selected_users = []
         self.num_users = num_users
@@ -69,7 +69,7 @@ class Server:
         model_path = os.path.join("models", self.dataset)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
-        torch.save(self.model, os.path.join(model_path, "server" + ".pt"))
+        torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
@@ -127,10 +127,12 @@ class Server:
     # Save loss, accurancy to h5 fiel
     def save_results(self):
         alg = self.dataset + "_" + self.algorithm
-        alg = alg + "_" + str(self.learning_rate) + "_" + str(self.beta) + "_" + str(self.lamda) + "_" + str(self.num_users) + "u" + "_" + str(self.batch_size) + "b" + "_" + str(self.local_epochs)
+        alg = alg  + "_" + str(self.learning_rate) + "_" + str(self.beta) + "_" + str(self.lamda) + "_" + str(self.num_users) + "u" + "_" + str(self.batch_size) + "b" + "_" + str(self.local_epochs)
         if(self.algorithm == "pFedMe" or self.algorithm == "pFedMe_p"):
             alg = alg + "_" + str(self.K) + "_" + str(self.personal_learning_rate)
         alg = alg + "_" + str(self.times)
+        if not os.path.exists("./results/"):
+            os.makedirs("./results/")
         if (len(self.rs_glob_acc) != 0 &  len(self.rs_train_acc) & len(self.rs_train_loss)) :
             with h5py.File("./results/"+'{}.h5'.format(alg, self.local_epochs), 'w') as hf:
                 hf.create_dataset('rs_glob_acc', data=self.rs_glob_acc)
@@ -140,7 +142,7 @@ class Server:
         
         # store persionalized value
         alg = self.dataset + "_" + self.algorithm + "_p"
-        alg = alg  + "_" + str(self.learning_rate) + "_" + str(self.beta) + "_" + str(self.lamda) + "_" + str(self.num_users) + "u" + "_" + str(self.batch_size) + "b"+ "_" + str(self.local_epochs)
+        alg = alg  + "_" + str(self.learning_rate) + "_" + str(self.beta) + "_" + str(self.lamda) + "_" + str(self.num_users) + "u" + "_" + str(self.batch_size) + "b" + "_" + str(self.local_epochs)
         if(self.algorithm == "pFedMe" or self.algorithm == "pFedMe_p"):
             alg = alg + "_" + str(self.K) + "_" + str(self.personal_learning_rate)
         alg = alg + "_" + str(self.times)
@@ -219,9 +221,9 @@ class Server:
         self.rs_train_acc.append(train_acc)
         self.rs_train_loss.append(train_loss)
         #print("stats_train[1]",stats_train[3][0])
-        print("Average Global Accurancy: ", glob_acc)
-        print("Average Global Trainning Accurancy: ", train_acc)
-        print("Average Global Trainning Loss: ",train_loss)
+        # print("Average Global Accurancy: ", glob_acc)
+        # print("Average Global Trainning Accurancy: ", train_acc)
+        # print("Average Global Trainning Loss: ",train_loss)
 
     def evaluate_personalized_model(self):
         stats = self.test_persionalized_model()  
@@ -234,9 +236,9 @@ class Server:
         self.rs_train_acc_per.append(train_acc)
         self.rs_train_loss_per.append(train_loss)
         #print("stats_train[1]",stats_train[3][0])
-        print("Average Personal Accurancy: ", glob_acc)
-        print("Average Personal Trainning Accurancy: ", train_acc)
-        print("Average Personal Trainning Loss: ",train_loss)
+        # print("Average Personal Accurancy: ", glob_acc)
+        # print("Average Personal Trainning Accurancy: ", train_acc)
+        # print("Average Personal Trainning Loss: ",train_loss)
 
     def evaluate_one_step(self):
         for c in self.users:

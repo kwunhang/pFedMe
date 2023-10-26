@@ -35,8 +35,8 @@ users_lables = []
 print("idx",idx)
 # devide for label for each users:
 for user in trange(NUM_USERS):
-    for j in range(NUM_LABELS):  # 4 labels for each users
-        l = (user * NUM_USERS + j) % 10
+    for j in range(NUM_LABELS):  # 2 labels for each users
+        l = (user * NUM_LABELS + j) % 10
         users_lables.append(l)
 unique, counts = np.unique(users_lables, return_counts=True)
 print("--------------")
@@ -77,13 +77,13 @@ y = [[] for _ in range(NUM_USERS)]
 idx = np.zeros(10, dtype=np.int64)
 count = 0
 for user in trange(NUM_USERS):
-    for j in range(NUM_LABELS):  # 4 labels for each users
-        l = (user + j) % 10
+    for j in range(NUM_LABELS):  # 2 labels for each users
+        l = (user * NUM_LABELS + j) % 10
         print("value of L",l)
         print("value of count",count)
         num_samples =  number_samples[count] # num sample
         count = count + 1
-        if idx[l] + num_samples < len(mnist_data[l]):
+        if idx[l] + num_samples <= len(mnist_data[l]):
             X[user] += mnist_data[l][idx[l]:idx[l]+num_samples].values.tolist()
             y[user] += (l*np.ones(num_samples)).tolist()
             idx[l] += num_samples

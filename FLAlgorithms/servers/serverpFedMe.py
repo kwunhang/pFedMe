@@ -46,8 +46,8 @@ class pFedMe(Server):
             self.send_parameters()
 
             # Evaluate gloal model on user for each interation
-            print("Evaluate global model")
-            print("")
+            # print("Evaluate global model")
+            # print("")
             self.evaluate()
 
             # do update for all users not only selected users

@@ -18,9 +18,9 @@ class MySGD(Optimizer):
                     continue
                 d_p = p.grad.data
                 if(beta != 0):
-                    p.data.add_(-beta, d_p)
+                    p.data.add_(d_p, alpha=-beta)
                 else:     
-                    p.data.add_(-group['lr'], d_p)
+                    p.data.add_(d_p, alpha = -group['lr'])
         return loss
 
 
@@ -61,6 +61,8 @@ class pFedMeOptimizer(Optimizer):
         weight_update = local_weight_updated.copy()
         for group in self.param_groups:
             for p, localweight in zip( group['params'], weight_update):
+                # print("para_groups cuda:", str(p.is_cuda))
+                # print("local modal cuda:", str(localweight.is_cuda))
                 p.data = p.data - group['lr'] * (p.grad.data + group['lamda'] * (p.data - localweight.data) + group['mu']*p.data)
         return  group['params'], loss
     

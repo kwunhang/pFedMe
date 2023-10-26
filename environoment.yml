@@ -1,0 +1,10 @@
+name: pFedMe
+dependencies:
+  - numpy
+  - pandas
+  - scipy
+  - Pillow
+  - pytorch
+  - torchvision
+  - matplotlib
+  - tqdm
