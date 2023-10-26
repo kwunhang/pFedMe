@@ -19,7 +19,7 @@ class UserAVG(User):
         else:
             self.loss = nn.NLLLoss()
 
-        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
 
     def set_grads(self, new_grads):
         if isinstance(new_grads, nn.Parameter):
@@ -31,15 +31,16 @@ class UserAVG(User):
 
     def train(self, epochs):
         LOSS = 0
+        optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
         self.model.train()
         for epoch in range(1, self.local_epochs + 1):
             self.model.train()
             X, y = self.get_next_train_batch()
-            self.optimizer.zero_grad()
+            optimizer.zero_grad()
             output = self.model(X)
             loss = self.loss(output, y)
             loss.backward()
-            self.optimizer.step()
+            optimizer.step()
             self.clone_model_paramenter(self.model.parameters(), self.local_model)
         return LOSS
 

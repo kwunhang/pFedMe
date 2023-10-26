@@ -23,7 +23,7 @@ class UserpFedMe(User):
 
         self.K = K
         self.personal_learning_rate = personal_learning_rate
-        self.optimizer = pFedMeOptimizer(self.model.parameters(), lr=self.personal_learning_rate, lamda=self.lamda)
+        # self.optimizer = pFedMeOptimizer(self.model.parameters(), lr=self.personal_learning_rate, lamda=self.lamda)
 
     def set_grads(self, new_grads):
         if isinstance(new_grads, nn.Parameter):
@@ -37,17 +37,17 @@ class UserpFedMe(User):
         LOSS = 0
         self.model.train()
         for epoch in range(1, self.local_epochs + 1):  # local update
-            
+            optimizer = pFedMeOptimizer(self.model.parameters(), lr=self.personal_learning_rate, lamda=self.lamda)
             self.model.train()
             X, y = self.get_next_train_batch()
 
             # K = 30 # K is number of personalized steps
             for i in range(self.K):
-                self.optimizer.zero_grad()
+                optimizer.zero_grad()
                 output = self.model(X)
                 loss = self.loss(output, y)
                 loss.backward()
-                self.persionalized_model_bar, _ = self.optimizer.step(self.local_model)
+                self.persionalized_model_bar, _ = optimizer.step(self.local_model)
 
             # update local weight after finding aproximate theta
             for new_param, localweight in zip(self.persionalized_model_bar, self.local_model):
