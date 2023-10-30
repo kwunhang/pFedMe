@@ -221,9 +221,9 @@ class Server:
         self.rs_train_acc.append(train_acc)
         self.rs_train_loss.append(train_loss)
         #print("stats_train[1]",stats_train[3][0])
-        # print("Average Global Accurancy: ", glob_acc)
-        # print("Average Global Trainning Accurancy: ", train_acc)
-        # print("Average Global Trainning Loss: ",train_loss)
+        print("Average Global Accurancy: ", glob_acc)
+        print("Average Global Trainning Accurancy: ", train_acc)
+        print("Average Global Trainning Loss: ",train_loss)
 
     def evaluate_personalized_model(self):
         stats = self.test_persionalized_model()  
