@@ -26,7 +26,8 @@ class User:
         self.trainloader = DataLoader(train_data, self.batch_size,num_workers=1)
         self.testloader =  DataLoader(test_data, self.batch_size,num_workers=1)
         self.testloaderfull = DataLoader(test_data, self.test_samples,num_workers=1)
-        self.trainloaderfull = DataLoader(train_data, self.train_samples,num_workers=1)
+        # self.trainloaderfull = DataLoader(train_data, self.train_samples,num_workers=1)
+        self.trainloaderfull = DataLoader(train_data, 500,num_workers=1)
         self.iter_trainloader = iter(self.trainloader)
         self.iter_testloader = iter(self.testloader)
 
@@ -83,13 +84,16 @@ class User:
         self.model.eval()
         train_acc = 0
         loss = 0
+        data_size = 0
         for x, y in self.trainloaderfull:
             x, y = x.to(self.device), y.to(self.device)
             output = self.model(x)
             train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            loss += self.loss(output, y)
-            #print(self.id + ", Train Accuracy:", train_acc)
-            #print(self.id + ", Train Loss:", loss)
+            loss += self.loss(output, y)* y.shape[0]
+            data_size += y.shape[0]
+        loss /= data_size
+        # print(self.id + ", Train Accuracy:", train_acc)
+        # print(self.id + ", Train Loss:", loss)
         return train_acc, loss , self.train_samples
     
     def test_persionalized_model(self):
@@ -110,14 +114,17 @@ class User:
         self.model.eval()
         train_acc = 0
         loss = 0
+        data_size = 0
         self.update_parameters(self.persionalized_model_bar)
         for x, y in self.trainloaderfull:
             x, y = x.to(self.device), y.to(self.device)
             output = self.model(x)
             train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            loss += self.loss(output, y)
-            #print(self.id + ", Train Accuracy:", train_acc)
-            #print(self.id + ", Train Loss:", loss)
+            loss += self.loss(output, y)* y.shape[0]
+            data_size += y.shape[0]
+        loss /= data_size
+        # print(self.id + ", Train Accuracy:", train_acc)
+        # print(self.id + ", Train Loss:", loss)
         self.update_parameters(self.local_model)
         return train_acc, loss , self.train_samples
     

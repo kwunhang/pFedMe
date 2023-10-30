@@ -23,7 +23,7 @@ class UserPerAvg(User):
         else:
             self.loss = nn.NLLLoss()
 
-        # self.optimizer = MySGD(self.model.parameters(), lr=self.learning_rate)
+        self.optimizer = MySGD(self.model.parameters(), lr=self.learning_rate)
 
     def set_grads(self, new_grads):
         if isinstance(new_grads, nn.Parameter):
@@ -38,7 +38,6 @@ class UserPerAvg(User):
         self.model.train()
     def train(self, epochs):
         LOSS = 0
-        optimizer = MySGD(self.model.parameters(), lr=self.learning_rate)
         self.model.train()
         for epoch in range(1, self.local_epochs + 1):  # local update 
             self.model.train()
@@ -47,15 +46,15 @@ class UserPerAvg(User):
 
             #step 1
             X, y = self.get_next_train_batch()
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             output = self.model(X)
             loss = self.loss(output, y)
             loss.backward()
-            optimizer.step()
+            self.optimizer.step()
 
             #step 2
             X, y = self.get_next_train_batch()
-            optimizer.zero_grad()
+            self.optimizer.zero_grad()
             output = self.model(X)
             loss = self.loss(output, y)
             loss.backward()
@@ -64,7 +63,7 @@ class UserPerAvg(User):
             for old_p, new_p in zip(self.model.parameters(), temp_model):
                 old_p.data = new_p.data.clone()
                 
-            optimizer.step(beta = self.beta)
+            self.optimizer.step(beta = self.beta)
 
             # clone model to user model 
             self.clone_model_paramenter(self.model.parameters(), self.local_model)
@@ -72,19 +71,18 @@ class UserPerAvg(User):
         return LOSS    
 
     def train_one_step(self):
-        optimizer = MySGD(self.model.parameters(), lr=self.learning_rate)
         self.model.train()
         #step 1
         X, y = self.get_next_test_batch()
-        optimizer.zero_grad()
+        self.optimizer.zero_grad()
         output = self.model(X)
         loss = self.loss(output, y)
         loss.backward()
-        optimizer.step()
+        self.optimizer.step()
             #step 2
         X, y = self.get_next_test_batch()
-        optimizer.zero_grad()
+        self.optimizer.zero_grad()
         output = self.model(X)
         loss = self.loss(output, y)
         loss.backward()
-        optimizer.step(beta=self.beta)
+        self.optimizer.step(beta=self.beta)

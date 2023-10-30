@@ -1,4 +1,3 @@
-# from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 from tqdm import trange
 import numpy as np
@@ -58,51 +57,62 @@ for i in trange(10):
 print("\nNumb samples of each label:\n", [len(v) for v in cifa_data])
 users_lables = []
 
+print("idx",idx)
+# devide for label for each users:
+for user in trange(NUM_USERS):
+    for j in range(NUM_LABELS):  # 2 labels for each users
+        l = (user * NUM_LABELS + j) % 10
+        users_lables.append(l)
+unique, counts = np.unique(users_lables, return_counts=True)
+print("--------------")
+print(unique, counts)
+
+def ram_dom_gen(total, size):
+    print(total)
+    nums = []
+    temp = []
+    for i in range(size - 1):
+        val = np.random.randint(total//(size + 1), total//2)
+        temp.append(val)
+        total -= val
+    temp.append(total)
+    print(temp)
+    return temp
+number_sample = []
+for total_value, count in zip(cifa_data, counts):
+    temp = ram_dom_gen(len(total_value), count)
+    number_sample.append(temp)
+print("--------------")
+print(number_sample)
+
+i = 0
+number_samples = []
+for i in range(len(number_sample[0])):
+    for sample in number_sample:
+        print(sample)
+        number_samples.append(sample[i])
+
+print("--------------")
+print(number_samples)
+
 ###### CREATE USER DATA SPLIT #######
 # Assign 100 samples to each user
 X = [[] for _ in range(NUM_USERS)]
 y = [[] for _ in range(NUM_USERS)]
 idx = np.zeros(10, dtype=np.int64)
-for user in range(NUM_USERS):
-    for j in range(NUM_LABELS):  # 3 labels for each users
-        # l = (2*user+j)%10
-        l = (user*NUM_LABELS + j) % 10
-        print("L:", l)
-        X[user] += cifa_data[l][idx[l]:idx[l]+10].tolist()
-        y[user] += (l*np.ones(10)).tolist()
-        idx[l] += 10
-
-print("IDX1:", idx)  # counting samples for each labels
-
-# Assign remaining sample by power law
-user = 0
-props = np.random.lognormal(
-    0, 2., (10, NUM_USERS, NUM_LABELS))  # last 5 is 5 labels
-props = np.array([[[len(v)-NUM_USERS]] for v in cifa_data]) * \
-    props/np.sum(props, (1, 2), keepdims=True)
-# print("here:",props/np.sum(props,(1,2), keepdims=True))
-# props = np.array([[[len(v)-100]] for v in mnist_data]) * \
-#    props/np.sum(props, (1, 2), keepdims=True)
-# idx = 1000*np.ones(10, dtype=np.int64)
-# print("here2:",props)
-
-sumup = 0
+count = 0
 for user in trange(NUM_USERS):
     for j in range(NUM_LABELS):  # 2 labels for each users
-        # l = (2*user+j)%10
-        l = (user*NUM_LABELS + j) % 10
-        num_samples = int(props[l, user//int(NUM_USERS/10), j])
-        numran1 = random.randint(300, 600)
-        num_samples = (num_samples)  + numran1 #+ 200
-        if(NUM_USERS <= 20): 
-            num_samples = num_samples * 2
+        l = (user * NUM_LABELS + j) % 10
+        print("value of L",l)
+        print("value of count",count)
+        num_samples =  number_samples[count] # num sample
+        count = count + 1
         if idx[l] + num_samples <= len(cifa_data[l]):
             X[user] += cifa_data[l][idx[l]:idx[l]+num_samples].tolist()
             y[user] += (l*np.ones(num_samples)).tolist()
             idx[l] += num_samples
-            print("check len os user:", user, j,
-                  "len data", len(X[user]), num_samples)
-            print(l,"used up to",idx[l])
+            print("check len os user:", user, j,"len data", len(X[user]), num_samples)
 
 print("IDX2:", idx) # counting samples for each labels
 
@@ -114,19 +124,22 @@ test_data = {'users': [], 'user_data':{}, 'num_samples':[]}
 # for i in trange(5, ncols=120):
 for i in range(NUM_USERS):
     uname = 'f_{0:05d}'.format(i)
-
-    X_train, X_test, y_train, y_test = train_test_split(X[i], y[i], train_size=0.75, stratify=y[i])
-
-    train_data["user_data"][uname] = {'x': X_train, 'y': y_train}
-    train_data['users'].append(uname)
-    train_data['num_samples'].append(len(y_train))
     
+    combined = list(zip(X[i], y[i]))
+    random.shuffle(combined)
+    X[i][:], y[i][:] = zip(*combined)
+    num_samples = len(X[i])
+    train_len = int(0.75*num_samples)
+    test_len = num_samples - train_len
+    
+    train_data['users'].append(uname) 
+    train_data['user_data'][uname] = {'x': X[i][:train_len], 'y': y[i][:train_len]}
+    train_data['num_samples'].append(train_len)
     test_data['users'].append(uname)
-    test_data["user_data"][uname] = {'x': X_test, 'y': y_test}
-    test_data['num_samples'].append(len(y_test))
+    test_data['user_data'][uname] = {'x': X[i][train_len:], 'y': y[i][train_len:]}
+    test_data['num_samples'].append(test_len)
 
-print("Num_samples train :", train_data['num_samples'])
-print("Num_samples test :", test_data['num_samples'])
+print("Num_samples:", train_data['num_samples'])
 print("Total_samples:",sum(train_data['num_samples'] + test_data['num_samples']))
     
 with open(train_path,'w') as outfile:
