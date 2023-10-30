@@ -25,8 +25,8 @@ class Net(nn.Module):
         x = self.fc1(x)
         x = nn.ReLU()(x)
         x = self.fc2(x)
-        output = F.log_softmax(x, dim=1)
-        return output
+        # output = F.log_softmax(x, dim=1)
+        return x
 
 class Mclr_Logistic(nn.Module):
     def __init__(self, input_dim = 784, output_dim = 10):
@@ -153,6 +153,38 @@ class CNNCifar(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
         x = x.view(-1, 64 * 4 * 4)
+        x = self.dropout(F.relu(self.fc1(x)))
+        x = self.dropout(F.relu(self.fc2(x)))
+        x = self.fc3(x)
+        return F.log_softmax(x, dim=1)
+    
+    
+class CNNCifar2(nn.Module):
+    def __init__(self, num_classes):
+        super(CNNCifar2, self).__init__()
+        self.conv1 = nn.Conv2d(1, 16, 3, padding=1)
+        self.conv2 = nn.Conv2d(16, 32, 3, padding=1)
+        self.conv3 = nn.Conv2d(32, 64, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.fc1 = nn.Linear(64 * 3 * 3, 512)
+        self.fc2 = nn.Linear(512, 64)
+        self.fc3 = nn.Linear(64, 10)
+        self.dropout = nn.Dropout(p=.5)
+
+        self.weight_keys = [['fc1.weight', 'fc1.bias'],
+                            ['fc2.weight', 'fc2.bias'],
+                            ['fc3.weight', 'fc3.bias'],
+                            ['conv3.weight', 'conv3.bias'],
+                            ['conv2.weight', 'conv2.bias'],
+                            ['conv1.weight', 'conv1.bias'],
+                            ]
+                            
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv3(x)))
+        # x = x.view(-1, 64 * 4 * 4)
+        x = torch.flatten(x, 1)
         x = self.dropout(F.relu(self.fc1(x)))
         x = self.dropout(F.relu(self.fc2(x)))
         x = self.fc3(x)
