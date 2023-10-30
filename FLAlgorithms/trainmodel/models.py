@@ -25,7 +25,7 @@ class Net(nn.Module):
         x = self.fc1(x)
         x = nn.ReLU()(x)
         x = self.fc2(x)
-        # output = F.log_softmax(x, dim=1)
+        # x = F.log_softmax(x, dim=1)
         return x
 
 class Mclr_Logistic(nn.Module):
