@@ -86,7 +86,6 @@ class User:
         train_acc = 0
         loss = 0
         data_size = 0
-        print("hi")
         with torch.no_grad():
             for x, y in self.trainloaderfull:
                 x, y = x.to(self.device), y.to(self.device)
@@ -120,7 +119,6 @@ class User:
         loss = 0
         data_size = 0
         self.update_parameters(self.persionalized_model_bar)
-        print("hi")
         with torch.no_grad():
             for x, y in self.trainloaderfull:
                 x, y = x.to(self.device), y.to(self.device)
