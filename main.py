@@ -18,7 +18,7 @@ torch.manual_seed(0)
 def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_epochs, optimizer, numusers, K, personal_learning_rate, times, gpu):
 
-    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:240"
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:200"
     # Get device status: Check GPU or CPU
     # cpu = "cpu"
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
