@@ -26,8 +26,8 @@ class User:
         self.trainloader = DataLoader(train_data, self.batch_size,num_workers=1)
         self.testloader =  DataLoader(test_data, self.batch_size,num_workers=1)
         self.testloaderfull = DataLoader(test_data, self.test_samples,num_workers=1)
-        # self.trainloaderfull = DataLoader(train_data, self.train_samples,num_workers=1)
-        self.trainloaderfull = DataLoader(train_data, 50,num_workers=1)
+        self.trainloaderfull = DataLoader(train_data, self.train_samples,num_workers=1)
+        # self.trainloaderfull = DataLoader(train_data, 1000,num_workers=1)
         self.iter_trainloader = iter(self.trainloader)
         self.iter_testloader = iter(self.testloader)
 
