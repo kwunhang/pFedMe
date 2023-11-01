@@ -17,6 +17,7 @@ torch.manual_seed(0)
 def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_epochs, optimizer, numusers, K, personal_learning_rate, times, gpu):
 
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:2o"
     # Get device status: Check GPU or CPU
     # cpu = "cpu"
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
@@ -34,6 +35,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         if(model == "cnn"):
             if(dataset == "Mnist"):
                 model = Net().to(device), model
+                # model = CNNCifar2(10).to(device), model
             elif(dataset == "Cifar10"):
                 model = CNNCifar(10).to(device), model
             
