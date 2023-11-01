@@ -54,6 +54,8 @@ class FedAvg(Server):
             #loss_ /= self.total_train_samples
             #loss.append(loss_)
             #print(loss_)
+            if(glob_iter % 100 == 99):
+                self.save_model(glob_iter+1)
         #print(loss)
         self.save_results()
         self.save_model()

@@ -53,6 +53,8 @@ class PerAvg(Server):
                 user.train(self.local_epochs) #* user.train_samples
                 
             self.aggregate_parameters()
+            if(glob_iter % 100 == 99):
+                self.save_model(glob_iter+1)
 
         self.save_results()
         self.save_model()

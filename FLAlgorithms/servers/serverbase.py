@@ -65,11 +65,14 @@ class Server:
         for user in self.selected_users:
             self.add_parameters(user, user.train_samples / total_train)
 
-    def save_model(self):
+    def save_model(self, echo=None):
         model_path = os.path.join("models", self.dataset)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
-        torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        if echo:
+            torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(echo) + ".pt"))
+        else:
+            torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
@@ -125,7 +128,7 @@ class Server:
             param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
             
     # Save loss, accurancy to h5 fiel
-    def save_results(self):
+    def save_results(self, t= None):
         alg = self.dataset + "_" + self.algorithm
         alg = alg  + "_" + str(self.learning_rate) + "_" + str(self.beta) + "_" + str(self.lamda) + "_" + str(self.num_users) + "u" + "_" + str(self.batch_size) + "b" + "_" + str(self.local_epochs)
         if(self.algorithm == "pFedMe" or self.algorithm == "pFedMe_p"):

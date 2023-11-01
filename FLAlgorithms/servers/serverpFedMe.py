@@ -64,6 +64,8 @@ class pFedMe(Server):
             self.evaluate_personalized_model()
             #self.aggregate_parameters()
             self.persionalized_aggregate_parameters()
+            if(glob_iter % 100 == 99):
+                self.save_model(glob_iter+1)
 
 
         #print(loss)
