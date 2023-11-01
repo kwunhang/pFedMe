@@ -85,6 +85,7 @@ class User:
         train_acc = 0
         loss = 0
         data_size = 0
+        print("hi")
         for x, y in self.trainloaderfull:
             x, y = x.to(self.device), y.to(self.device)
             output = self.model(x)
