@@ -55,8 +55,8 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         if(algorithm == "PerAvg"):
             server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
 
-        print("user model",server.users[0].model)
-        print("user optimizer",server.users[0].optimizer)
+        # print("user model",server.users[0].model)
+        # print("user optimizer",server.users[0].optimizer)
         server.train()
         server.test()
 

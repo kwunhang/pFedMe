@@ -22,7 +22,7 @@ for _, train_data in enumerate(testloader,0):
 random.seed(4998)
 np.random.seed(4998)
 NUM_USERS = 20 # should be muitiple of 10
-NUM_LABELS = 2
+NUM_LABELS = 3
 
 # numran1 = random.randint(10, 50)
 # numran2 = random.randint(1, 10)
