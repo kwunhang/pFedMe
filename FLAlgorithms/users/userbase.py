@@ -39,7 +39,7 @@ class User:
     def set_parameters(self, model):
         for old_param, new_param, local_param in zip(self.model.parameters(), model.parameters(), self.local_model):
             old_param.data = new_param.data.clone()
-            local_param.data = new_param.data.clone().to(self.device)
+            local_param.data = new_param.data.clone()
         #self.local_weight_updated = copy.deepcopy(self.optimizer.param_groups[0]['params'])
 
     def get_parameters(self):
