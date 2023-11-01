@@ -35,9 +35,9 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         if(model == "cnn"):
             if(dataset == "Mnist"):
                 model = Net().to(device), model
-                # model = CNNCifar2(10).to(device), model
             elif(dataset == "Cifar10"):
-                model = CNNCifar(10).to(device), model
+                # model = CNNCifar(10).to(device), model
+                model = CifarNet().to(device), model
             
         if(model == "dnn"):
             if(dataset == "Mnist"):
