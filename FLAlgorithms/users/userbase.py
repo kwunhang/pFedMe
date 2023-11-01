@@ -71,13 +71,14 @@ class User:
     def test(self):
         self.model.eval()
         test_acc = 0
-        for x, y in self.testloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            #@loss += self.loss(output, y)
-            #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
-            #print(self.id + ", Test Loss:", loss)
+        with torch.no_grad():
+            for x, y in self.testloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                #@loss += self.loss(output, y)
+                #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
+                #print(self.id + ", Test Loss:", loss)
         return test_acc, y.shape[0]
 
     def train_error_and_loss(self):
@@ -86,12 +87,13 @@ class User:
         loss = 0
         data_size = 0
         print("hi")
-        for x, y in self.trainloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            loss += self.loss(output, y)* y.shape[0]
-            data_size += y.shape[0]
+        with torch.no_grad():
+            for x, y in self.trainloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                loss += self.loss(output, y)* y.shape[0]
+                data_size += y.shape[0]
         loss /= data_size
         # print(self.id + ", Train Accuracy:", train_acc)
         # print(self.id + ", Train Loss:", loss)
@@ -101,10 +103,11 @@ class User:
         self.model.eval()
         test_acc = 0
         self.update_parameters(self.persionalized_model_bar)
-        for x, y in self.testloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+        with torch.no_grad():
+            for x, y in self.testloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
             #@loss += self.loss(output, y)
             #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
             #print(self.id + ", Test Loss:", loss)
@@ -118,12 +121,13 @@ class User:
         data_size = 0
         self.update_parameters(self.persionalized_model_bar)
         print("hi")
-        for x, y in self.trainloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            loss += self.loss(output, y)* y.shape[0]
-            data_size += y.shape[0]
+        with torch.no_grad():
+            for x, y in self.trainloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                loss += self.loss(output, y)* y.shape[0]
+                data_size += y.shape[0]
         loss /= data_size
         # print(self.id + ", Train Accuracy:", train_acc)
         # print(self.id + ", Train Loss:", loss)
