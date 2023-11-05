@@ -33,9 +33,22 @@ class UserPerAvg(User):
             for idx, model_grad in enumerate(self.model.parameters()):
                 model_grad.data = new_grads[idx]
 
-    def train(self, epochs):
+    # def train(self, epochs):
+    #     LOSS = 0
+    #     self.model.train()
+    def train2(self, epochs):
         LOSS = 0
         self.model.train()
+        for epoch in range(0, epochs):  # local update 
+            self.model.train()
+            X, y = self.get_next_train_batch()
+            self.optimizer.zero_grad()
+            output = self.model(X)
+            loss = self.loss(output, y)
+            loss.backward()
+            self.optimizer.step()
+        return LOSS  
+    
     def train(self, epochs):
         LOSS = 0
         self.model.train()
@@ -73,14 +86,14 @@ class UserPerAvg(User):
     def train_one_step(self):
         self.model.train()
         #step 1
-        X, y = self.get_next_test_batch()
+        X, y = self.get_next_train_batch()
         self.optimizer.zero_grad()
         output = self.model(X)
         loss = self.loss(output, y)
         loss.backward()
         self.optimizer.step()
             #step 2
-        X, y = self.get_next_test_batch()
+        X, y = self.get_next_train_batch()
         self.optimizer.zero_grad()
         output = self.model(X)
         loss = self.loss(output, y)

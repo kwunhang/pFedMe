@@ -80,6 +80,24 @@ class User:
                 #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
                 #print(self.id + ", Test Loss:", loss)
         return test_acc, y.shape[0]
+    
+    def test_and_get_label(self):
+        self.model.eval()
+        predict_label = []
+        true_label = [] 
+        # test_acc = 0
+        with torch.no_grad():
+            for x, y in self.testloaderfull:
+                true_label.extend(y.numpy())
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                predict = (torch.argmax(output, dim=1) )
+                predict_label.extend(predict.cpu().numpy())
+                # test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                #@loss += self.loss(output, y)
+                # print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
+                #print(self.id + ", Test Loss:", loss)
+        return true_label, predict_label
 
     def train_error_and_loss(self):
         self.model.eval()

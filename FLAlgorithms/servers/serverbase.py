@@ -65,12 +65,12 @@ class Server:
         for user in self.selected_users:
             self.add_parameters(user, user.train_samples / total_train)
 
-    def save_model(self, echo=None):
+    def save_model(self, epoch=None):
         model_path = os.path.join("models", self.dataset)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
-        if echo:
-            torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(echo) + ".pt"))
+        if epoch:
+            torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(epoch) + ".pt"))
         else:
             torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
 
@@ -169,6 +169,17 @@ class Server:
         ids = [c.id for c in self.users]
 
         return ids, num_samples, tot_correct
+
+    def test_and_get_label(self):
+        # self.model.eval()
+        predict_label = []
+        true_label = [] 
+        for c in self.users:
+            tl, pl = c.test_and_get_label()
+            true_label.extend(tl)
+            predict_label.extend(pl)
+            
+        return true_label, predict_label
 
     def train_error_and_loss(self):
         num_samples = []
