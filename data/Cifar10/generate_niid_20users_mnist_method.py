@@ -40,7 +40,7 @@ if not os.path.exists(dir_path):
 
 cifa_data_image = []
 cifa_data_label = []
-
+# classes = ('plane','car','bird','cat', 'deer','dog','frog','horse','ship','truck')
 cifa_data_image.extend(trainset.data.cpu().detach().numpy())
 cifa_data_image.extend(testset.data.cpu().detach().numpy())
 cifa_data_label.extend(trainset.targets.cpu().detach().numpy())

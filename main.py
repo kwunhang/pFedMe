@@ -16,7 +16,7 @@ torch.manual_seed(0)
 
 
 def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_epochs, optimizer, numusers, K, personal_learning_rate, times, gpu):
+         local_epochs, optimizer, numusers, K, personal_learning_rate, times, gpu, restore):
 
     # Get device status: Check GPU or CPU
     # cpu = "cpu"
@@ -55,6 +55,14 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         if(algorithm == "PerAvg"):
             server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
 
+        if (restore == 1 and i==0):
+            model_path = "restore"
+            if os.path.exists(model_path) and len(os.listdir(model_path))==1:
+                model_path = os.path.join(model_path,os.listdir(model_path)[0])
+                server.load_model(model_path)
+            else:
+                print("fail to restore")
+                exit()
         # print("user model",server.users[0].model)
         # print("user optimizer",server.users[0].optimizer)
         server.train()
@@ -84,7 +92,12 @@ if __name__ == "__main__":
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
     parser.add_argument("--times", type=int, default=5, help="running time")
     parser.add_argument("--gpu", type=int, default=0, help="Which GPU to run the experiments, -1 mean CPU, 0,1,2 for GPU")
+    parser.add_argument("--restore", type=int, default=0, help="Restore the previous training, 0 mean no and 1 mean restore from restore folder")
     args = parser.parse_args()
+    
+    if(args.restore == 1 and args.times!= 0):
+        print("restore currently just work for training 1 and need to adjust the epoch")
+        exit()
 
     print("=" * 80)
     print("Summary of training process:")
@@ -114,5 +127,6 @@ if __name__ == "__main__":
         K=args.K,
         personal_learning_rate=args.personal_learning_rate,
         times = args.times,
-        gpu=args.gpu
+        gpu=args.gpu,
+        restore=args.restore
         )
