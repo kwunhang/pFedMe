@@ -59,7 +59,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             model_path = "restore"
             if os.path.exists(model_path) and len(os.listdir(model_path))==1:
                 model_path = os.path.join(model_path,os.listdir(model_path)[0])
-                server.load_model(model_path)
+                server.model = torch.load(model_path)
             else:
                 print("fail to restore")
                 exit()
