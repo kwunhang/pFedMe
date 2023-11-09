@@ -95,7 +95,7 @@ if __name__ == "__main__":
     parser.add_argument("--restore", type=int, default=0, help="Restore the previous training, 0 mean no and 1 mean restore from restore folder")
     args = parser.parse_args()
     
-    if(args.restore == 1 and args.times!= 0):
+    if(args.restore == 1 and args.times!= 1):
         print("restore currently just work for training 1 and need to adjust the epoch")
         exit()
 
