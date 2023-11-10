@@ -33,8 +33,8 @@ def analyseFedAvg(dataset, algorithm, model, batch_size, learning_rate, beta, la
         if(dataset == "Mnist"):
             model = Net().to(device), model
         elif(dataset == "Cifar10"):
-            # model = CNNCifar(10).to(device), model
-            model = CifarNet().to(device), model
+            model = ResNet18().to(device), model
+            # model = CifarNet().to(device), model
         
     if(model == "dnn"):
         if(dataset == "Mnist"):
@@ -69,8 +69,8 @@ def analysePerFed(dataset, algorithm, model, batch_size, learning_rate, beta, la
         if(dataset == "Mnist"):
             model = Net().to(device), model
         elif(dataset == "Cifar10"):
-            # model = CNNCifar(10).to(device), model
-            model = CifarNet().to(device), model
+            model = ResNet18().to(device), model
+            # model = CifarNet().to(device), model
         
     if(model == "dnn"):
         if(dataset == "Mnist"):
@@ -179,8 +179,8 @@ def analysePFedMe(dataset, algorithm, model, batch_size, learning_rate, beta, la
         if(dataset == "Mnist"):
             model = Net().to(device), model
         elif(dataset == "Cifar10"):
-            # model = CNNCifar(10).to(device), model
-            model = CifarNet().to(device), model
+            model = ResNet18().to(device), model
+            # model = CifarNet().to(device), model
         
     if(model == "dnn"):
         if(dataset == "Mnist"):
