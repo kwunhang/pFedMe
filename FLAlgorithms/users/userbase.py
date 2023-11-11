@@ -6,12 +6,13 @@ import json
 from torch.utils.data import DataLoader
 import numpy as np
 import copy
+torch.manual_seed(0)
 
 class User:
     """
     Base class for users in federated learning.
     """
-    def __init__(self, device, id, train_data, test_data, model, batch_size = 0, learning_rate = 0, beta = 0 , lamda = 0, local_epochs = 0):
+    def __init__(self, device, id, train_data, test_data, model, batch_size = 0, learning_rate = 0, beta = 0 , lamda = 0, local_iters = 0):
 
         self.device = device
         self.model = copy.deepcopy(model)
@@ -22,12 +23,11 @@ class User:
         self.learning_rate = learning_rate
         self.beta = beta
         self.lamda = lamda
-        self.local_epochs = local_epochs
-        self.trainloader = DataLoader(train_data, self.batch_size,num_workers=1)
+        self.local_iters = local_iters
+        self.trainloader = DataLoader(train_data, self.batch_size, shuffle=True, num_workers=1)
         self.testloader =  DataLoader(test_data, self.batch_size,num_workers=1)
         self.testloaderfull = DataLoader(test_data, self.test_samples,num_workers=1)
         self.trainloaderfull = DataLoader(train_data, self.train_samples,num_workers=1)
-        # self.trainloaderfull = DataLoader(train_data, 1000,num_workers=1)
         self.iter_trainloader = iter(self.trainloader)
         self.iter_testloader = iter(self.testloader)
 

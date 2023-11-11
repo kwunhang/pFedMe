@@ -10,16 +10,16 @@ import numpy as np
 
 class FedAvg(Server):
     def __init__(self, device, dataset,algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-                 local_epochs, optimizer, num_users, times):
+                 local_iters, optimizer, num_users, times):
         super().__init__(device, dataset,algorithm, model[0], batch_size, learning_rate, beta, lamda, num_glob_iters,
-                         local_epochs, optimizer, num_users, times)
+                         local_iters, optimizer, num_users, times)
 
         # Initialize data for all  users
         data = read_data(dataset)
         total_users = len(data[0])
         for i in range(total_users):
             id, train , test = read_user_data(i, data, dataset)
-            user = UserAVG(device, id, train, test, model, batch_size, learning_rate,beta,lamda, local_epochs, optimizer)
+            user = UserAVG(device, id, train, test, model, batch_size, learning_rate,beta,lamda, local_iters, optimizer)
             self.users.append(user)
             self.total_train_samples += user.train_samples
             
@@ -49,7 +49,7 @@ class FedAvg(Server):
 
             self.selected_users = self.select_users(glob_iter,self.num_users)
             for user in self.selected_users:
-                user.train(self.local_epochs) #* user.train_samples
+                user.train(self.local_iters) #* user.train_samples
             self.aggregate_parameters()
             #loss_ /= self.total_train_samples
             #loss.append(loss_)

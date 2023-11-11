@@ -12,9 +12,9 @@ import copy
 
 class UserpFedMe(User):
     def __init__(self, device, numeric_id, train_data, test_data, model, batch_size, learning_rate,beta,lamda,
-                 local_epochs, optimizer, K, personal_learning_rate):
+                 local_iters, optimizer, K, personal_learning_rate):
         super().__init__(device, numeric_id, train_data, test_data, model[0], batch_size, learning_rate, beta, lamda,
-                         local_epochs)
+                         local_iters)
 
         if(model[1] == "Mclr_CrossEntropy"):
             self.loss = nn.CrossEntropyLoss()
@@ -36,7 +36,7 @@ class UserpFedMe(User):
     def train(self, epochs):
         LOSS = 0
         self.model.train()
-        for epoch in range(1, self.local_epochs + 1):  # local update
+        for iter in range(1, self.local_iters + 1):  # local update
             self.model.train()
             X, y = self.get_next_train_batch()
 

@@ -10,9 +10,9 @@ from FLAlgorithms.users.userbase import User
 
 class UserAVG(User):
     def __init__(self, device, numeric_id, train_data, test_data, model, batch_size, learning_rate, beta, lamda,
-                 local_epochs, optimizer):
+                 local_iters, optimizer):
         super().__init__(device, numeric_id, train_data, test_data, model[0], batch_size, learning_rate, beta, lamda,
-                         local_epochs)
+                         local_iters)
 
         if(model[1] == "Mclr_CrossEntropy"):
             self.loss = nn.CrossEntropyLoss()
@@ -32,7 +32,7 @@ class UserAVG(User):
     def train(self, epochs):
         LOSS = 0
         self.model.train()
-        for epoch in range(1, self.local_epochs + 1):
+        for iter in range(1, self.local_iters + 1):
             self.model.train()
             X, y = self.get_next_train_batch()
             self.optimizer.zero_grad()

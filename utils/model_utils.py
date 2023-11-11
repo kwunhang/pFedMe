@@ -240,6 +240,33 @@ def read_cifa_data():
 
     return train_data['users'], _ , train_data['user_data'], test_data['user_data']
 
+def read_cifar_data_byClient(dataset):
+    train_data_dir = os.path.join('data',dataset,'data', 'train')
+    test_data_dir = os.path.join('data',dataset,'data', 'test')
+    clients = []
+    train_data = {}
+    test_data = {}
+    
+    train_files = os.listdir(train_data_dir)
+    train_files = [f for f in train_files if f.endswith('.npz')]
+    for f in train_files:
+        file_path = os.path.join(train_data_dir, f)
+        with open(file_path, 'rb') as inf:
+            client_train_data = np.load(inf,allow_pickle=True)['data'].tolist()
+        clients.extend(str(f))
+        train_data[str(f)] = client_train_data
+
+    test_files = os.listdir(test_data_dir)
+    test_files = [f for f in test_files if f.endswith('.npz')]
+    for f in test_files:
+        file_path = os.path.join(test_data_dir, f)
+        with open(file_path, 'rb') as inf:
+            client_test_data = np.load(inf,allow_pickle=True)['data'].tolist()
+        test_data[str(f)] = client_test_data
+    
+    return clients, train_data, test_data
+    
+
 def read_data(dataset):
     '''parses data in given train and test data directories
 
@@ -258,6 +285,11 @@ def read_data(dataset):
     # if(dataset == "Cifar10"):
     #     clients, groups, train_data, test_data = read_cifa_data()
     #     return clients, groups, train_data, test_data
+    
+    if(dataset == "Cifar10ByClient"):
+        clients, train_data, test_data = read_cifar_data_byClient(dataset)
+        return clients, [], train_data, test_data
+        
 
     train_data_dir = os.path.join('data',dataset,'data', 'train')
     test_data_dir = os.path.join('data',dataset,'data', 'test')
@@ -300,7 +332,7 @@ def read_user_data(index,data,dataset):
         y_train = torch.Tensor(y_train).type(torch.int64)
         X_test = torch.Tensor(X_test).view(-1, NUM_CHANNELS, IMAGE_SIZE, IMAGE_SIZE).type(torch.float32)
         y_test = torch.Tensor(y_test).type(torch.int64)
-    elif(dataset == "Cifar10"):
+    elif(dataset == "Cifar10" or dataset =="Cifar10ByClient"):
         X_train, y_train, X_test, y_test = train_data['x'], train_data['y'], test_data['x'], test_data['y']
         X_train = torch.Tensor(X_train).view(-1, NUM_CHANNELS_CIFAR, IMAGE_SIZE_CIFAR, IMAGE_SIZE_CIFAR).type(torch.float32)
         y_train = torch.Tensor(y_train).type(torch.int64)
