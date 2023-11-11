@@ -253,8 +253,9 @@ def read_cifar_data_byClient(dataset):
         file_path = os.path.join(train_data_dir, f)
         with open(file_path, 'rb') as inf:
             client_train_data = np.load(inf,allow_pickle=True)['data'].tolist()
-        clients.extend(str(f))
-        train_data[str(f)] = client_train_data
+        user = str(f).split('.')[0]
+        clients.append(user)
+        train_data[user] = client_train_data
 
     test_files = os.listdir(test_data_dir)
     test_files = [f for f in test_files if f.endswith('.npz')]
@@ -262,7 +263,7 @@ def read_cifar_data_byClient(dataset):
         file_path = os.path.join(test_data_dir, f)
         with open(file_path, 'rb') as inf:
             client_test_data = np.load(inf,allow_pickle=True)['data'].tolist()
-        test_data[str(f)] = client_test_data
+        test_data[str(f).split('.')[0]] = client_test_data
     
     return clients, train_data, test_data
     
