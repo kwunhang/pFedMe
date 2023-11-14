@@ -45,9 +45,9 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
         if device == torch.device('cpu'):
             # state_dict =torch.load(path, map_location=device)
-           server.model.load_state_dict(path, map_location=device)
+           server.model.load_state_dict(torch.load(path), map_location=device)
         else:
-            server.model.load_state_dict(path)
+            server.model.load_state_dict(torch.load(path))
         server.send_parameters()
         server.evaluate()
         
