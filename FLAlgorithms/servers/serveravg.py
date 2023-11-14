@@ -56,6 +56,11 @@ class FedAvg(Server):
             #print(loss_)
             if(glob_iter % 100 == 99):
                 self.save_model(glob_iter+1)
+        print("final check" + "!"*30)
+        self.send_parameters()
+
+        # Evaluate model each interation
+        self.evaluate()
         #print(loss)
         self.save_results()
         self.save_model()
