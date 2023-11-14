@@ -33,7 +33,7 @@ class Server:
         #    param.grad = torch.zeros_like(param.data)
         #self.send_parameters()
         
-    def aggregate_grads(self):
+    def aggregate_grads(self): #didnt use
         assert (self.users is not None and len(self.users) > 0)
         for param in self.model.parameters():
             param.grad = torch.zeros_like(param.data)
@@ -53,12 +53,13 @@ class Server:
     def add_parameters(self, user, ratio):
         model = self.model.parameters()
         for server_param, user_param in zip(self.model.parameters(), user.get_parameters()):
-            server_param.data = server_param.data + user_param.data.clone() * ratio
+            newdata = server_param.data + user_param.data.clone() * ratio
+            server_param.copy_(newdata)
 
     def aggregate_parameters(self):
         assert (self.users is not None and len(self.users) > 0)
         for param in self.model.parameters():
-            param.data = torch.zeros_like(param.data)
+            param.copy_( torch.zeros_like(param.data))
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
@@ -108,7 +109,8 @@ class Server:
     def persionalized_update_parameters(self,user, ratio):
         # only argegate the local_weight_update
         for server_param, user_param in zip(self.model.parameters(), user.local_weight_updated):
-            server_param.data = server_param.data + user_param.data.clone() * ratio
+            newdata = server_param.data + user_param.data.clone() * ratio
+            server_param.copy_(newdata)
 
 
     def persionalized_aggregate_parameters(self):
@@ -117,7 +119,7 @@ class Server:
         # store previous parameters
         previous_param = copy.deepcopy(list(self.model.parameters()))
         for param in self.model.parameters():
-            param.data = torch.zeros_like(param.data)
+            param.copy_(torch.zeros_like(param.data))
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
@@ -129,7 +131,7 @@ class Server:
 
         # aaggregate avergage model with previous model using parameter beta 
         for pre_param, param in zip(previous_param, self.model.parameters()):
-            param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
+            param.copy_((1 - self.beta)*pre_param.data + self.beta*param.data)
             
     # Save loss, accurancy to h5 fiel
     def save_results(self, t= None):
