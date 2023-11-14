@@ -70,9 +70,11 @@ class Server:
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         if global_iter:
-            torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+            # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+            torch.save(self.model.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
         else:
-            torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+            # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+            torch.save(self.model.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
