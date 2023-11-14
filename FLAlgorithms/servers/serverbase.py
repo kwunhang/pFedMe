@@ -52,14 +52,16 @@ class Server:
 
     def add_parameters(self, user, ratio):
         model = self.model.parameters()
-        for server_param, user_param in zip(self.model.parameters(), user.get_parameters()):
-            newdata = server_param.data + user_param.data.clone() * ratio
-            server_param.copy_(newdata)
+        with torch.no_grad():
+            for server_param, user_param in zip(self.model.parameters(), user.get_parameters()):
+                newdata = server_param.data + user_param.data.clone() * ratio
+                server_param.copy_(newdata)
 
     def aggregate_parameters(self):
         assert (self.users is not None and len(self.users) > 0)
-        for param in self.model.parameters():
-            param.copy_( torch.zeros_like(param.data))
+        with torch.no_grad():
+            for param in self.model.parameters():
+                param.copy_( torch.zeros_like(param.data))
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
@@ -108,9 +110,10 @@ class Server:
     # define function for persionalized agegatation.
     def persionalized_update_parameters(self,user, ratio):
         # only argegate the local_weight_update
-        for server_param, user_param in zip(self.model.parameters(), user.local_weight_updated):
-            newdata = server_param.data + user_param.data.clone() * ratio
-            server_param.copy_(newdata)
+        with torch.no_grad():
+            for server_param, user_param in zip(self.model.parameters(), user.local_weight_updated):
+                newdata = server_param.data + user_param.data.clone() * ratio
+                server_param.copy_(newdata)
 
 
     def persionalized_aggregate_parameters(self):
@@ -118,8 +121,9 @@ class Server:
 
         # store previous parameters
         previous_param = copy.deepcopy(list(self.model.parameters()))
-        for param in self.model.parameters():
-            param.copy_(torch.zeros_like(param.data))
+        with torch.no_grad():
+            for param in self.model.parameters():
+                param.copy_(torch.zeros_like(param.data))
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
@@ -130,8 +134,9 @@ class Server:
             #self.add_parameters(user, 1 / len(self.selected_users))
 
         # aaggregate avergage model with previous model using parameter beta 
-        for pre_param, param in zip(previous_param, self.model.parameters()):
-            param.copy_((1 - self.beta)*pre_param.data + self.beta*param.data)
+        with torch.no_grad():
+            for pre_param, param in zip(previous_param, self.model.parameters()):
+                param.copy_((1 - self.beta)*pre_param.data + self.beta*param.data)
             
     # Save loss, accurancy to h5 fiel
     def save_results(self, t= None):
