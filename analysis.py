@@ -57,7 +57,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         assert len(true_label)== len(predict_label)
         accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
         print("fedavg acc:" ,accuracy)
-        server.train()
+        # server.train()
         
     if(algorithm == "pFedMe"):
         server = pFedMe(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, K, personal_learning_rate, 1)
