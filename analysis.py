@@ -16,6 +16,10 @@ from analysis_utils import plot_cm, computePRF
 from utils.model_utils import read_data, read_user_data
 
 torch.manual_seed(0)
+
+
+cpu = torch.device('cpu')
+
     
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu):
@@ -43,11 +47,13 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "FedAvg"):
         server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
         path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
-        if device == torch.device('cpu'):
-            # state_dict =torch.load(path, map_location=device)
-           server.model.load_state_dict(torch.load(path), map_location=device)
-        else:
-            server.model.load_state_dict(torch.load(path))
+        # if device == torch.device('cpu'):
+        #     # state_dict =torch.load(path, map_location=device)
+        #     server.model.load_state_dict(torch.load(path), map_location=device)
+        # else:
+        server.model = server.model.to(cpu)
+        server.model.load_state_dict(torch.load(path))
+        server.model =  server.model.to(device)
         server.send_parameters()
         server.evaluate()
         

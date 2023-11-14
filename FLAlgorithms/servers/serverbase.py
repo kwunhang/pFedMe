@@ -5,6 +5,7 @@ import h5py
 from utils.model_utils import Metrics
 import copy
 
+cpu = torch.device('cpu')
 class Server:
     def __init__(self, device, dataset,algorithm, model, batch_size, learning_rate ,beta, lamda,
                  num_glob_iters, local_iters, optimizer,num_users, times):
@@ -66,15 +67,16 @@ class Server:
             self.add_parameters(user, user.train_samples / total_train)
 
     def save_model(self, global_iter=None):
+        saveModel = self.model.to(cpu)
         model_path = os.path.join("models", self.dataset)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         if global_iter:
             # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
-            torch.save(self.model.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+            torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
         else:
             # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
-            torch.save(self.model.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+            torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
