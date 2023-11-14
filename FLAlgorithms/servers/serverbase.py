@@ -67,7 +67,7 @@ class Server:
             self.add_parameters(user, user.train_samples / total_train)
 
     def save_model(self, global_iter=None):
-        saveModel = self.model.to(cpu)
+        saveModel = copy.deepcopy(self.model).to(cpu)
         model_path = os.path.join("models", self.dataset)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
@@ -77,7 +77,6 @@ class Server:
         else:
             # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
             torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
-        self.model.to(self.device)
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
