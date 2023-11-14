@@ -58,6 +58,7 @@ class FedAvg(Server):
                 self.save_model(glob_iter+1)
         print("final check" + "!"*30)
         self.send_parameters()
+        torch.save(self.model.static_dict(), "./try.pt")
 
         # Evaluate model each interation
         self.evaluate()
