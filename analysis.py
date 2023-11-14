@@ -53,7 +53,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         # else:
         server.model = server.model.to(cpu)
         assert (os.path.exists(path))
-        server.model = server.model.load_state_dict(torch.load(path))
+        server.model.load_state_dict(torch.load(path))
         server.model =  server.model.to(device)
         server.send_parameters()
         server.evaluate()
