@@ -45,10 +45,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
             model = DNN(60,20,10).to(device), model
     
     path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
-    model = model.to(cpu)
+    model = model[0].to(cpu)
     assert (os.path.exists(path))
     model.load_state_dict(torch.load(path))
-    model =  model.to(device),model
+    model = model.to(device),model
     # server.send_parameters()
     # server.evaluate()
 
