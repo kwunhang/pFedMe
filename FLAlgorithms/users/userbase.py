@@ -88,6 +88,7 @@ class User:
         # test_acc = 0
         with torch.no_grad():
             for x, y in self.testloaderfull:
+                print("length: ",len(y))
                 true_label.extend(y.numpy())
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
