@@ -43,6 +43,14 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
             model = DNN().to(device), model
         else: 
             model = DNN(60,20,10).to(device), model
+    
+    path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
+    model = model.to(cpu)
+    assert (os.path.exists(path))
+    model.load_state_dict(torch.load(path))
+    model =  model.to(device),model
+    # server.send_parameters()
+    # server.evaluate()
 
     if(algorithm == "FedAvg"):
         server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
@@ -51,10 +59,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         #     # state_dict =torch.load(path, map_location=device)
         #     server.model.load_state_dict(torch.load(path), map_location=device)
         # else:
-        server.model = server.model.to(cpu)
-        assert (os.path.exists(path))
-        server.model.load_state_dict(torch.load(path))
-        server.model =  server.model.to(device)
+        # server.model = server.model.to(cpu)
+        # assert (os.path.exists(path))
+        # server.model.load_state_dict(torch.load(path))
+        # server.model =  server.model.to(device)
         server.send_parameters()
         server.evaluate()
         
