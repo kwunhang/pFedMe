@@ -77,6 +77,7 @@ class Server:
         else:
             # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
             torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        self.model.to(self.device)
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
