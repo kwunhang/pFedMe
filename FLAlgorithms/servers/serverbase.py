@@ -52,7 +52,7 @@ class Server:
 
     def add_parameters(self, server_model, user, ratio):
         # server model is server.model.state_dict
-        user_model = user.state_dict()
+        user_model = user.model.state_dict()
         for key in server_model:
             # newdata = server_param.data + user_param.data.clone() * ratio
             server_model[key] = server_model[key] + user_model[key] * ratio
