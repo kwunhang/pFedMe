@@ -182,6 +182,33 @@ class Server:
         ids = [c.id for c in self.users]
 
         return ids, num_samples, tot_correct
+    
+    def user_testGM(self, user):
+        self.model.eval()
+        test_acc = 0
+        with torch.no_grad():
+            for x, y in user.testloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                #@loss += self.loss(output, y)
+                #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
+                #print(self.id + ", Test Loss:", loss)
+        return test_acc, y.shape[0]
+
+    def testGM(self):
+        '''tests self.latest_model on given clients
+        '''
+        num_samples = []
+        tot_correct = []
+        losses = []
+        for c in self.users:
+            ct, ns = self.user_testGM(c)
+            tot_correct.append(ct*1.0)
+            num_samples.append(ns)
+        ids = [c.id for c in self.users]
+
+        return ids, num_samples, tot_correct
 
     def test_and_get_label(self):
         # self.model.eval()
@@ -239,8 +266,10 @@ class Server:
 
     def evaluate(self):
         stats = self.test()  
+        stats_GM = self.testGM()
         stats_train = self.train_error_and_loss()
         glob_acc = np.sum(stats[2])*1.0/np.sum(stats[1])
+        glob_acc_GM = np.sum(stats_GM[2])*1.0/np.sum(stats_GM[1])
         train_acc = np.sum(stats_train[2])*1.0/np.sum(stats_train[1])
         # train_loss = np.dot(stats_train[3], stats_train[1])*1.0/np.sum(stats_train[1])
         train_loss = sum([x * y for (x, y) in zip(stats_train[1], stats_train[3])]).item() / np.sum(stats_train[1])
@@ -249,6 +278,7 @@ class Server:
         self.rs_train_loss.append(train_loss)
         # print("stats_train[1]",stats_train[3][0])
         print("Average Global Accurancy: ", glob_acc)
+        print("Average Global Accurancy: (Global model) ", glob_acc_GM)
         print("Average Global Trainning Accurancy: ", train_acc)
         print("Average Global Trainning Loss: ",train_loss)
 
