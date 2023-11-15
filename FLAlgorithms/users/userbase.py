@@ -88,7 +88,6 @@ class User:
         # test_acc = 0
         with torch.no_grad():
             for x, y in self.testloaderfull:
-                print("length: ",len(y))
                 true_label.extend(y.numpy())
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
@@ -174,6 +173,15 @@ class User:
     def load_model(self):
         model_path = os.path.join("models", self.dataset)
         self.model = torch.load(os.path.join(model_path, "server" + ".pt"))
+    
+    def user_upload_BN(self):
+        self.model.train()
+        for X, y in self.trainloader:
+            # self.optimizer.zero_grad()
+            X = X.to(self.device)
+            output = self.model(X)
+            # loss = self.loss(output, y)
+            # loss.backward()
     
     @staticmethod
     def model_exists():

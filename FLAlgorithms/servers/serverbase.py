@@ -121,7 +121,7 @@ class Server:
         assert (self.users is not None and len(self.users) > 0)
 
         # store previous parameters
-        previous_param = copy.deepcopy(list(self.model.parameters()))
+        previous_model = self.model.state_dict()
         global_model = self.model.state_dict()
         for key, data in global_model.items():
             global_model[key]= (torch.zeros_like(data))
@@ -134,11 +134,16 @@ class Server:
         for user in self.selected_users:
             self.add_parameters(global_model, user, user.train_samples / total_train)
             #self.add_parameters(user, 1 / len(self.selected_users))
-        self.model.load_state_dict(global_model)
+        # self.model.load_state_dict(global_model)
 
         # aaggregate avergage model with previous model using parameter beta 
-        for pre_param, param in zip(previous_param, self.model.parameters()):
-            param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
+        # for pre_param, param in zip(previous_param, self.model.parameters()):
+            # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
+        for key in previous_model:
+            self.model[key] = (1 - self.beta)*previous_model[key] + self.beta*self.model[key]
+            # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
+        
+        self.model.load_state_dict(global_model)
             
     # Save loss, accurancy to h5 fiel
     def save_results(self, t= None):
@@ -319,3 +324,16 @@ class Server:
         # print("Average Personal Accurancy: ", glob_acc)
         # print("Average Personal Trainning Accurancy: ", train_acc)
         # print("Average Personal Trainning Loss: ",train_loss)
+        
+    def update_user_BN(self):
+        for c in self.users:
+            c.user_upload_BN()
+        print("updated user BN")
+
+    
+    def update_server_BN(self):
+        global_model = self.model.state_dict()
+        for key, data in global_model.items():
+            if(key.endswith("running_var") or key.endswith("running_mean")):
+                global_model[key]= (torch.zeros_like(data))
+        

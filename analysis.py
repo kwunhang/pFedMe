@@ -44,27 +44,24 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         else: 
             model = DNN(60,20,10).to(device), model
     
-    path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
-    model = model[0].to(cpu)
-    assert (os.path.exists(path))
-    model.load_state_dict(torch.load(path))
-    model = model.to(device),model
+    # path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
+    # model = model[0].to(cpu)
+    # assert (os.path.exists(path))
+    # model.load_state_dict(torch.load(path))
+    # model = model.to(device),model
     # server.send_parameters()
     # server.evaluate()
 
     if(algorithm == "FedAvg"):
         server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
         path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
-        # if device == torch.device('cpu'):
-        #     # state_dict =torch.load(path, map_location=device)
-        #     server.model.load_state_dict(torch.load(path), map_location=device)
-        # else:
-        # server.model = server.model.to(cpu)
-        # assert (os.path.exists(path))
+        assert (os.path.exists(path))
         # server.model.load_state_dict(torch.load(path))
-        # server.model =  server.model.to(device)
+        server.model = torch.load(path)
+        server.model = server.model.to(device)
         server.send_parameters()
-        server.evaluate()
+        server.update_user_BN()
+        server.aggregate_parameters()
         
         true_label, predict_label = server.test_and_get_label()
         plot_cm(true_label,predict_label, "FedAvg")
@@ -76,9 +73,12 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         
     if(algorithm == "pFedMe"):
         server = pFedMe(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, K, personal_learning_rate, 1)
-        path = "models/Cifar10/pFedMe_server.pt"
+        path = "models/Cifar10_dist_caifarnet/pFedMe_server.pt"
         server.model = torch.load(path)
+        server.model = server.model.to(device)
         server.send_parameters()
+        server.update_user_BN()
+        server.aggregate_parameters()
             # make prediction to global model
         true_label = []
         predict_label = []
@@ -162,9 +162,12 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
     if(algorithm == "PerAvg"):
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
-        path = "models/Cifar10/PerAvg_server.pt"
+        path = "models/Cifar10_dist_caifarnet/PerAvg_server.pt"
         server.model = torch.load(path)
+        server.model = server.model.to(device)
         server.send_parameters()
+        server.update_user_BN()
+        server.aggregate_parameters()
         # make prediction to global model
         true_label = []
         predict_label = []
