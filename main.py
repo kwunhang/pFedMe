@@ -46,7 +46,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 model = DNN(60,20,10).to(device), model
         
         if(model == "cnn_nBN"):
-            if(dataset == "Mnist"):
+            if(dataset == "Cifar10" or dataset == "Cifar10ByClient"):
                 model = CifarNetNoBN().to(device), model
 
         # select algorithm
