@@ -140,7 +140,7 @@ class Server:
         # for pre_param, param in zip(previous_param, self.model.parameters()):
             # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
         for key in previous_model:
-            self.model[key] = (1 - self.beta)*previous_model[key] + self.beta*self.model[key]
+            global_model[key] = (1 - self.beta)*previous_model[key] + self.beta*global_model[key]
             # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
         
         self.model.load_state_dict(global_model)
