@@ -50,24 +50,25 @@ class Server:
         for user in self.users:
             user.set_parameters(self.model)
 
-    def add_parameters(self, user, ratio):
-        model = self.model.parameters()
-        with torch.no_grad():
-            for server_param, user_param in zip(self.model.parameters(), user.get_parameters()):
-                newdata = server_param.data + user_param.data.clone() * ratio
-                server_param.copy_(newdata)
+    def add_parameters(self, server_model, user, ratio):
+        # server model is server.model.state_dict
+        user_model = user.state_dict()
+        for key in server_model:
+            # newdata = server_param.data + user_param.data.clone() * ratio
+            server_model[key] = server_model[key] + user_model[key] * ratio
 
     def aggregate_parameters(self):
         assert (self.users is not None and len(self.users) > 0)
-        with torch.no_grad():
-            for param in self.model.parameters():
-                param.copy_( torch.zeros_like(param.data))
+        global_model = self.model.state_dict()
+        for key, data in global_model.items():
+            global_model[key] =  (torch.zeros_like(data))
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
             total_train += user.train_samples
         for user in self.selected_users:
-            self.add_parameters(user, user.train_samples / total_train)
+            self.add_parameters(global_model, user, user.train_samples / total_train)
+        self.model.load_state_dict(global_model)
 
     def save_model(self, global_iter=None):
         saveModel = copy.deepcopy(self.model).to(cpu)
@@ -107,13 +108,13 @@ class Server:
         #np.random.seed(round)
         return np.random.choice(self.users, num_users, replace=False) #, p=pk)
 
+    # not in use
     # define function for persionalized agegatation.
-    def persionalized_update_parameters(self,user, ratio):
-        # only argegate the local_weight_update
-        with torch.no_grad():
-            for server_param, user_param in zip(self.model.parameters(), user.local_weight_updated):
-                newdata = server_param.data + user_param.data.clone() * ratio
-                server_param.copy_(newdata)
+    # def persionalized_update_parameters(self,user, ratio):
+    #     # only argegate the local_weight_update
+    #     for server_param, user_param in zip(self.model.parameters(), user.local_weight_updated):
+    #         newdata = server_param.data + user_param.data.clone() * ratio
+    #         server_param.copy_(newdata)
 
 
     def persionalized_aggregate_parameters(self):
@@ -121,22 +122,23 @@ class Server:
 
         # store previous parameters
         previous_param = copy.deepcopy(list(self.model.parameters()))
-        with torch.no_grad():
-            for param in self.model.parameters():
-                param.copy_(torch.zeros_like(param.data))
+        global_model = self.model.state_dict()
+        for key, data in global_model.items():
+            global_model[key]= (torch.zeros_like(data))
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
             total_train += user.train_samples
 
+        # update global model including BN mean & var 
         for user in self.selected_users:
-            self.add_parameters(user, user.train_samples / total_train)
+            self.add_parameters(global_model, user, user.train_samples / total_train)
             #self.add_parameters(user, 1 / len(self.selected_users))
+        self.model.load_state_dict(global_model)
 
         # aaggregate avergage model with previous model using parameter beta 
-        with torch.no_grad():
-            for pre_param, param in zip(previous_param, self.model.parameters()):
-                param.copy_((1 - self.beta)*pre_param.data + self.beta*param.data)
+        for pre_param, param in zip(previous_param, self.model.parameters()):
+            param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
             
     # Save loss, accurancy to h5 fiel
     def save_results(self, t= None):

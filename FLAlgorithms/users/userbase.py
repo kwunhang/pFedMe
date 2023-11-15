@@ -37,12 +37,9 @@ class User:
         self.persionalized_model_bar = copy.deepcopy(list(self.model.parameters()))
     
     def set_parameters(self, model):
-        with torch.no_grad():
-            for old_param, new_param, local_param in zip(self.model.parameters(), model.parameters(), self.local_model):
-                old_param.copy_(new_param.data.clone())
-                local_param.copy_(new_param.data.clone())
-            # old_param.data = new_param.data.clone()
-            # local_param.data = new_param.data.clone()
+        for old_param, new_param, local_param in zip(self.model.parameters(), model.parameters(), self.local_model):
+            old_param.data = new_param.data.clone()
+            local_param.data = new_param.data.clone()
         #self.local_weight_updated = copy.deepcopy(self.optimizer.param_groups[0]['params'])
 
     def get_parameters(self):
@@ -51,18 +48,16 @@ class User:
         return self.model.parameters()
     
     def clone_model_paramenter(self, param, clone_param):
-        with torch.no_grad():
-            for param, clone_param in zip(param, clone_param):
-                clone_param.copy_(param.data.clone())
+        for param, clone_param in zip(param, clone_param):
+            clone_param.data = param.data.clone()
         return clone_param
     
     def get_updated_parameters(self):
         return self.local_weight_updated
     
     def update_parameters(self, new_params):
-        with torch.no_grad():
-            for param , new_param in zip(self.model.parameters(), new_params):
-                param.copy_(new_param.data.clone())
+        for param , new_param in zip(self.model.parameters(), new_params):
+            param.data = new_param.data.clone()
 
     def get_grads(self):
         grads = []
