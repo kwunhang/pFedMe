@@ -186,7 +186,7 @@ class CifarNet(nn.Module):
     
 class CifarNetNoBN(nn.Module):
     def __init__(self):
-        super(CifarNet, self).__init__()
+        super(CifarNetNoBN, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3,padding=1)
         # self.batch1 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3,padding=1)
