@@ -304,7 +304,7 @@ class ResNet_isic19(nn.Module):
         out = F.avg_pool2d(out, 4)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
-        return out
+        return F.log_softmax(out, dim=1)
     
 def ResNet18_isic19(num_classes=8):
     return ResNet_isic19(ResidualBlock, [2, 2, 2, 2], num_classes)
