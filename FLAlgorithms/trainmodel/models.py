@@ -271,7 +271,7 @@ def ResNet18():
 
 class ResNet_isic19(nn.Module):
     def __init__(self, block, num_blocks, num_classes=8):
-        super(ResNet, self).__init__()
+        super(ResNet_isic19, self).__init__()
         self.in_planes = 64
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7,
