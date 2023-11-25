@@ -199,7 +199,7 @@ class Server:
                 #@loss += self.loss(output, y)
                 #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
                 #print(self.id + ", Test Loss:", loss)
-        return test_acc, y.shape[0]
+        return test_acc, user.test_samples
 
     def testGM(self):
         '''tests self.latest_model on given clients
