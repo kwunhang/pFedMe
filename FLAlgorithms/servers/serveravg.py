@@ -26,14 +26,6 @@ class FedAvg(Server):
         print("Number of users / total users:",num_users, " / " ,total_users)
         print("Finished creating FedAvg server.")
 
-    # send avg BN variance mean and var in fedavg approach
-    def send_parameters(self):
-        assert (self.users is not None and len(self.users) > 0)
-        global_model = self.model.state_dict()
-        for user in self.users:
-            user.model.load_state_dict(global_model)
-            # user.set_parameters(self.model)
-
     def send_grads(self):
         assert (self.users is not None and len(self.users) > 0)
         grads = []

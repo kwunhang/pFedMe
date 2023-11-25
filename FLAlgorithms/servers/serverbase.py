@@ -273,7 +273,6 @@ class Server:
         stats = self.test()  
         stats_GM = self.testGM()
         stats_train = self.train_error_and_loss()
-        print(stats_train)
         glob_acc = np.sum(stats[2])*1.0/np.sum(stats[1])
         glob_acc_GM = np.sum(stats_GM[2])*1.0/np.sum(stats_GM[1])
         train_acc = np.sum(stats_train[2])*1.0/np.sum(stats_train[1])
