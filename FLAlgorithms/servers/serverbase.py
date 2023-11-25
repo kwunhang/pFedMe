@@ -50,25 +50,41 @@ class Server:
         for user in self.users:
             user.set_parameters(self.model)
 
-    def add_parameters(self, server_model, user, ratio):
-        # server model is server.model.state_dict
-        user_model = user.model.state_dict()
-        for key in server_model:
-            # newdata = server_param.data + user_param.data.clone() * ratio
-            server_model[key] = server_model[key] + user_model[key] * ratio
+    # def add_parameters(self, server_model, user, ratio):
+    #     # server model is server.model.state_dict
+    #     user_model = user.model.state_dict()
+    #     for key in server_model:
+    #         # newdata = server_param.data + user_param.data.clone() * ratio
+    #         server_model[key] = server_model[key] + user_model[key] * ratio
+
+    def add_parameters(self, user, ratio):
+        model = self.model.parameters()
+        for server_param, user_param in zip(self.model.parameters(), user.get_parameters()):
+            server_param.data = server_param.data + user_param.data.clone() * ratio
 
     def aggregate_parameters(self):
         assert (self.users is not None and len(self.users) > 0)
-        global_model = self.model.state_dict()
-        for key, data in global_model.items():
-            global_model[key] =  (torch.zeros_like(data))
+        for param in self.model.parameters():
+            param.data = torch.zeros_like(param.data)
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
             total_train += user.train_samples
         for user in self.selected_users:
-            self.add_parameters(global_model, user, user.train_samples / total_train)
-        self.model.load_state_dict(global_model)
+            self.add_parameters(user, user.train_samples / total_train)
+
+    # def aggregate_parameters(self):
+    #     assert (self.users is not None and len(self.users) > 0)
+    #     global_model = self.model.state_dict()
+    #     for key, data in global_model.items():
+    #         global_model[key] =  (torch.zeros_like(data))
+    #     total_train = 0
+    #     #if(self.num_users = self.to)
+    #     for user in self.selected_users:
+    #         total_train += user.train_samples
+    #     for user in self.selected_users:
+    #         self.add_parameters(global_model, user, user.train_samples / total_train)
+    #     self.model.load_state_dict(global_model)
 
     def save_model(self, global_iter=None):
         saveModel = copy.deepcopy(self.model).to(cpu)
@@ -110,40 +126,60 @@ class Server:
 
     # not in use
     # define function for persionalized agegatation.
-    # def persionalized_update_parameters(self,user, ratio):
-    #     # only argegate the local_weight_update
-    #     for server_param, user_param in zip(self.model.parameters(), user.local_weight_updated):
-    #         newdata = server_param.data + user_param.data.clone() * ratio
-    #         server_param.copy_(newdata)
+    def persionalized_update_parameters(self,user, ratio):
+        # only argegate the local_weight_update
+        for server_param, user_param in zip(self.model.parameters(), user.local_weight_updated):
+            newdata = server_param.data + user_param.data.clone() * ratio
+            server_param.copy_(newdata)
 
 
+    # def persionalized_aggregate_parameters(self):
+    #     assert (self.users is not None and len(self.users) > 0)
+
+    #     # store previous parameters
+    #     previous_model = self.model.state_dict()
+    #     global_model = self.model.state_dict()
+    #     for key, data in global_model.items():
+    #         global_model[key]= (torch.zeros_like(data))
+    #     total_train = 0
+    #     #if(self.num_users = self.to)
+    #     for user in self.selected_users:
+    #         total_train += user.train_samples
+
+    #     # update global model including BN mean & var 
+    #     for user in self.selected_users:
+    #         self.add_parameters(global_model, user, user.train_samples / total_train)
+    #         #self.add_parameters(user, 1 / len(self.selected_users))
+    #     # self.model.load_state_dict(global_model)
+
+    #     # aaggregate avergage model with previous model using parameter beta 
+    #     # for pre_param, param in zip(previous_param, self.model.parameters()):
+    #         # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
+    #     for key in previous_model:
+    #         global_model[key] = (1 - self.beta)*previous_model[key] + self.beta*global_model[key]
+    #         # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
+        
+    #     self.model.load_state_dict(global_model)
+    
     def persionalized_aggregate_parameters(self):
         assert (self.users is not None and len(self.users) > 0)
 
         # store previous parameters
-        previous_model = self.model.state_dict()
-        global_model = self.model.state_dict()
-        for key, data in global_model.items():
-            global_model[key]= (torch.zeros_like(data))
+        previous_param = copy.deepcopy(list(self.model.parameters()))
+        for param in self.model.parameters():
+            param.data = torch.zeros_like(param.data)
         total_train = 0
         #if(self.num_users = self.to)
         for user in self.selected_users:
             total_train += user.train_samples
 
-        # update global model including BN mean & var 
         for user in self.selected_users:
-            self.add_parameters(global_model, user, user.train_samples / total_train)
+            self.add_parameters(user, user.train_samples / total_train)
             #self.add_parameters(user, 1 / len(self.selected_users))
-        # self.model.load_state_dict(global_model)
 
         # aaggregate avergage model with previous model using parameter beta 
-        # for pre_param, param in zip(previous_param, self.model.parameters()):
-            # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
-        for key in previous_model:
-            global_model[key] = (1 - self.beta)*previous_model[key] + self.beta*global_model[key]
-            # param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
-        
-        self.model.load_state_dict(global_model)
+        for pre_param, param in zip(previous_param, self.model.parameters()):
+            param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
             
     # Save loss, accurancy to h5 fiel
     def save_results(self, t= None):
