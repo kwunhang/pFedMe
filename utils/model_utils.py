@@ -240,7 +240,7 @@ def read_cifa_data():
 
     return train_data['users'], _ , train_data['user_data'], test_data['user_data']
 
-def read_cifar_data_byClient(dataset):
+def read_data_byClient(dataset):
     train_data_dir = os.path.join('data',dataset,'data', 'train')
     test_data_dir = os.path.join('data',dataset,'data', 'test')
     clients = []
@@ -266,7 +266,6 @@ def read_cifar_data_byClient(dataset):
         test_data[str(f).split('.')[0]] = client_test_data
     
     return clients, train_data, test_data
-    
 
 def read_data(dataset):
     '''parses data in given train and test data directories
@@ -287,8 +286,8 @@ def read_data(dataset):
     #     clients, groups, train_data, test_data = read_cifa_data()
     #     return clients, groups, train_data, test_data
     
-    if(dataset == "Cifar10ByClient"):
-        clients, train_data, test_data = read_cifar_data_byClient(dataset)
+    if(dataset == "Cifar10ByClient" or dataset == "ISIC19"):
+        clients, train_data, test_data = read_data_byClient(dataset)
         return clients, [], train_data, test_data
         
 
