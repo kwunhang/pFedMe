@@ -319,7 +319,7 @@ class Server:
         self.rs_train_acc.append(train_acc)
         self.rs_train_loss.append(train_loss)
         # print("stats_train[1]",stats_train[3][0])
-        if (max(self.rs_glob_acc_per) == glob_acc):
+        if (max(self.rs_glob_acc) == glob_acc):
             self.save_best_model = True
         print("Average Global Accurancy: ", glob_acc)
         print("Average Global Accurancy: (Global model) ", glob_acc_GM)

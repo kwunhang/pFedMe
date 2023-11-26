@@ -58,6 +58,11 @@ class pFedMe(Server):
             # choose several users to send back upated model to server
             # self.personalized_evaluate()
             self.selected_users = self.select_users(glob_iter,self.num_users)
+            
+            # print selected user to observe the train accuracy change
+            print("selected user: ", end='')
+            for user in self.selected_users:
+                print(user.id)
 
             # Evaluate gloal model on user for each interation
             #print("Evaluate persionalized model")

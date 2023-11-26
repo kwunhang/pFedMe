@@ -50,6 +50,12 @@ class PerAvg(Server):
 
             # choose several users to send back upated model to server
             self.selected_users = self.select_users(glob_iter,self.num_users)
+            
+            # print selected user to observe the train accuracy change
+            print("selected user: ", end='')
+            for user in self.selected_users:
+                print(user.id)
+
             for user in self.selected_users:
                 user.train(self.local_iters) #* user.train_samples
                 

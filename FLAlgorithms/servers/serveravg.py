@@ -49,6 +49,12 @@ class FedAvg(Server):
             self.save_best_model(glob_iter)
 
             self.selected_users = self.select_users(glob_iter,self.num_users)
+            
+            # print selected user to observe the train accuracy change
+            print("selected user: ", end='')
+            for user in self.selected_users:
+                print(user.id)
+                
             for user in self.selected_users:
                 user.train(self.local_iters) #* user.train_samples
             self.aggregate_parameters()
