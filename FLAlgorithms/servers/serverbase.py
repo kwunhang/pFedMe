@@ -321,6 +321,9 @@ class Server:
         # print("stats_train[1]",stats_train[3][0])
         if (max(self.rs_glob_acc) == glob_acc):
             self.save_best= True
+        last_best = self.rs_glob_acc_per[::-1].index(max(self.rs_glob_acc_per))
+        if(last_best >= 30):
+            print(f"!!!! There is already {last_best} round no improvemnt!")
         print("Average Global Accurancy: ", glob_acc)
         print("Average Global Accurancy: (Global model) ", glob_acc_GM)
         print("Average Global Trainning Accurancy: ", train_acc)
@@ -338,6 +341,9 @@ class Server:
         self.rs_train_loss_per.append(train_loss)
         if (max(self.rs_glob_acc_per) == glob_acc):
             self.save_best= True
+        last_best = self.rs_glob_acc_per[::-1].index(max(self.rs_glob_acc_per))
+        if(last_best >= 30):
+            print(f"!!!! There is already {last_best} round no improvemnt!")
         # print("stats_train[1]",stats_train[3][0])
         print("Average Personal Accurancy: ", glob_acc)
         print("Average Personal Trainning Accurancy: ", train_acc)
@@ -364,6 +370,9 @@ class Server:
         #print("stats_train[1]",stats_train[3][0])
         if (max(self.rs_glob_acc_per) == glob_acc):
             self.save_best= True
+        last_best = self.rs_glob_acc_per[::-1].index(max(self.rs_glob_acc_per))
+        if(last_best >= 30):
+            print(f"!!!! There is already {last_best} round no improvemnt!")
         print("Average Personal Accurancy: ", glob_acc)
         print("Average Personal Trainning Accurancy: ", train_acc)
         print("Average Personal Trainning Loss: ",train_loss)

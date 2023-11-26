@@ -62,7 +62,8 @@ class pFedMe(Server):
             # print selected user to observe the train accuracy change
             print("selected user: ", end='')
             for user in self.selected_users:
-                print(user.id)
+                print(user.id, end='')
+            print('')
 
             # Evaluate gloal model on user for each interation
             #print("Evaluate persionalized model")
