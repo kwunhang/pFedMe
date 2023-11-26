@@ -37,15 +37,16 @@ class FedAvg(Server):
         for user in self.users:
             user.set_grads(grads)
 
-    def train(self):
+    def train(self, start_iter=0):
         loss = []
-        for glob_iter in range(self.num_glob_iters):
+        for glob_iter in range(start_iter, self.num_glob_iters):
             print("-------------Round number: ",glob_iter, " -------------")
             #loss_ = 0
             self.send_parameters()
 
             # Evaluate model each interation
             self.evaluate()
+            self.save_best_model(glob_iter)
 
             self.selected_users = self.select_users(glob_iter,self.num_users)
             for user in self.selected_users:

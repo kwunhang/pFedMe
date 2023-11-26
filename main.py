@@ -67,7 +67,8 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             if os.path.exists(model_path) and len(os.listdir(model_path))==1:
                 model_path = os.path.join(model_path,os.listdir(model_path)[0])
                 server.model = torch.load(model_path)
-                print("restore!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                server.update_server_BN()
+                print("restored the model and BN param.")
             else:
                 print("fail to restore")
                 exit()
@@ -101,6 +102,7 @@ if __name__ == "__main__":
     parser.add_argument("--times", type=int, default=5, help="running time")
     parser.add_argument("--gpu", type=int, default=0, help="Which GPU to run the experiments, -1 mean CPU, 0,1,2 for GPU")
     parser.add_argument("--restore", type=int, default=0, help="Restore the previous training, 0 mean no and 1 mean restore from restore folder")
+    parser.add_argument("--itered", type=int, default=0, help="Number of iteration of previous training ")
     args = parser.parse_args()
     
     if(args.restore == 1 and args.times!= 1):
@@ -136,5 +138,6 @@ if __name__ == "__main__":
         personal_learning_rate=args.personal_learning_rate,
         times = args.times,
         gpu=args.gpu,
-        restore=args.restore
+        restore=args.restore,
+        itered=args.itered
         )

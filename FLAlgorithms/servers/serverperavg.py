@@ -35,9 +35,9 @@ class PerAvg(Server):
         for user in self.users:
             user.set_grads(grads)
 
-    def train(self):
+    def train(self, start_iter = 0):
         loss = []
-        for glob_iter in range(self.num_glob_iters):
+        for glob_iter in range(start_iter, self.num_glob_iters):
             print("-------------Round number: ",glob_iter, " -------------")
             # send all parameter for users 
             self.send_parameters()
@@ -46,6 +46,7 @@ class PerAvg(Server):
             print("Evaluate global model with one step update")
             print("")
             self.evaluate_one_step()
+            self.save_best_model(glob_iter)
 
             # choose several users to send back upated model to server
             self.selected_users = self.select_users(glob_iter,self.num_users)

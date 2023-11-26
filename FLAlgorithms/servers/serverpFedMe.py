@@ -38,9 +38,9 @@ class pFedMe(Server):
         for user in self.users:
             user.set_grads(grads)
 
-    def train(self):
+    def train(self, start_iter = 0):
         loss = []
-        for glob_iter in range(self.num_glob_iters):
+        for glob_iter in range(start_iter, self.num_glob_iters):
             print("-------------Round number: ",glob_iter, " -------------")
             # send all parameter for users 
             self.send_parameters()
@@ -49,6 +49,7 @@ class pFedMe(Server):
             # print("Evaluate global model")
             # print("")
             self.evaluate()
+            self.save_best_model(glob_iter)
 
             # do update for all users not only selected users
             for user in self.users:
@@ -62,6 +63,7 @@ class pFedMe(Server):
             #print("Evaluate persionalized model")
             #print("")
             self.evaluate_personalized_model()
+            self.save_best_model(glob_iter, pFedMe=True)
             #self.aggregate_parameters()
             self.persionalized_aggregate_parameters()
             if(glob_iter % 100 == 99):

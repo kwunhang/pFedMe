@@ -27,6 +27,7 @@ class Server:
         self.algorithm = algorithm
         self.rs_train_acc, self.rs_train_loss, self.rs_glob_acc,self.rs_train_acc_per, self.rs_train_loss_per, self.rs_glob_acc_per = [], [], [], [], [], []
         self.times = times
+        self.save_best_model = False
         # Initialize the server's grads to zeros
         #for param in self.model.parameters():
         #    param.data = torch.zeros_like(param.data)
@@ -318,6 +319,8 @@ class Server:
         self.rs_train_acc.append(train_acc)
         self.rs_train_loss.append(train_loss)
         # print("stats_train[1]",stats_train[3][0])
+        if (max(self.rs_glob_acc_per) == glob_acc):
+            self.save_best_model = True
         print("Average Global Accurancy: ", glob_acc)
         print("Average Global Accurancy: (Global model) ", glob_acc_GM)
         print("Average Global Trainning Accurancy: ", train_acc)
@@ -333,10 +336,12 @@ class Server:
         self.rs_glob_acc_per.append(glob_acc)
         self.rs_train_acc_per.append(train_acc)
         self.rs_train_loss_per.append(train_loss)
+        if (max(self.rs_glob_acc_per) == glob_acc):
+            self.save_best_model = True
         # print("stats_train[1]",stats_train[3][0])
-        # print("Average Personal Accurancy: ", glob_acc)
-        # print("Average Personal Trainning Accurancy: ", train_acc)
-        # print("Average Personal Trainning Loss: ",train_loss)
+        print("Average Personal Accurancy: ", glob_acc)
+        print("Average Personal Trainning Accurancy: ", train_acc)
+        print("Average Personal Trainning Loss: ",train_loss)
 
     def evaluate_one_step(self):
         for c in self.users:
@@ -357,6 +362,8 @@ class Server:
         self.rs_train_acc_per.append(train_acc)
         self.rs_train_loss_per.append(train_loss)
         #print("stats_train[1]",stats_train[3][0])
+        if (max(self.rs_glob_acc_per) == glob_acc):
+            self.save_best_model = True
         print("Average Personal Accurancy: ", glob_acc)
         print("Average Personal Trainning Accurancy: ", train_acc)
         print("Average Personal Trainning Loss: ",train_loss)
@@ -372,4 +379,18 @@ class Server:
         for key, data in global_model.items():
             if(key.endswith("running_var") or key.endswith("running_mean")):
                 global_model[key]= (torch.zeros_like(data))
-        
+    
+    def save_best_model(self, step = None, pFedMe= False):
+        if (self.save_best_model == True):
+            saveModel = copy.deepcopy(self.model).to(cpu)
+            model_path = os.path.join("models", self.dataset)
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+            model_path = os.path.join(model_path, "bestModel")
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+            if pFedMe == False:
+                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(step) + ".pt"))
+            else:
+                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_bestPersonModel_" + str(step) + ".pt"))
+            self.save_best_model = False
