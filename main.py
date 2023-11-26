@@ -16,7 +16,7 @@ torch.manual_seed(0)
 
 
 def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, restore):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, restore, itered):
 
     # Get device status: Check GPU or CPU
     # cpu = "cpu"
@@ -74,7 +74,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 exit()
         # print("user model",server.users[0].model)
         # print("user optimizer",server.users[0].optimizer)
-        server.train()
+        server.train(start_iter=itered)
         server.test()
 
     # Average data 
