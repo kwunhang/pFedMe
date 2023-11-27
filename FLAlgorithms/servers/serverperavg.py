@@ -63,6 +63,7 @@ class PerAvg(Server):
             self.aggregate_parameters()
             if(glob_iter % 100 == 99):
                 self.save_model(glob_iter+1)
+                self.save_results()
 
         self.save_results()
         self.save_model()
