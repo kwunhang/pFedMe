@@ -53,7 +53,7 @@ class FedAvg(Server):
             # print selected user to observe the train accuracy change
             print("selected user: ", end='')
             for user in self.selected_users:
-                print(user.id, end='')
+                print(user.id, end=' ')
             print('')
                 
             for user in self.selected_users:

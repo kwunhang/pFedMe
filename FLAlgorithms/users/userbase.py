@@ -141,9 +141,11 @@ class User:
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
                 train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-                loss += self.loss(output, y)
+                # loss += self.loss(output, y)
+                loss += self.loss(output, y) * y.shape[0]
             #print(self.id + ", Train Accuracy:", train_acc)
             #print(self.id + ", Train Loss:", loss)
+            loss /= self.train_samples
         self.update_parameters(self.local_model)
         return train_acc, loss , self.train_samples
     
