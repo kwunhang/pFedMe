@@ -43,6 +43,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
             model = DNN().to(device), model
         else: 
             model = DNN(60,20,10).to(device), model
+            
+    if(model == "cnn"):
+        if(dataset == "ISIC19"):
+            model = ResNet18_isic19(8).to(device), model
     
     # path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
     # model = model[0].to(cpu)
@@ -253,7 +257,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient"])
+    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19"])
     parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
