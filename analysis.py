@@ -163,6 +163,19 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         assert len(true_label)== len(predict_label)
         accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
         print("pfedme pm2-5 acc:" ,accuracy)
+        
+        # 
+        true_label = []
+        predict_label = []
+        for user in server.users:
+            user.train(5)
+            
+        true_label, predict_label = server.test_and_get_label()
+        plot_cm(true_label,predict_label, "PFedMe(PM1)10step")
+        computePRF(true_label,predict_label, "PFedMe(PM1)10step")
+        assert len(true_label)== len(predict_label)
+        accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
+        print("pfedme pm1-10 acc:" ,accuracy)
 
 
     if(algorithm == "PerAvg"):
@@ -255,6 +268,22 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         assert len(true_label)== len(predict_label)
         accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
         print("perfedavg pm2-5 acc:" ,accuracy)
+        
+        # make prediction with personal model with 5step gradient decent
+        true_label = []
+        predict_label = []
+        for user in server.users:
+            user.train_one_step()
+            user.train_one_step()
+            user.train_one_step()
+            user.train_one_step()
+            
+        true_label, predict_label = server.test_and_get_label()
+        plot_cm(true_label,predict_label, "PerFed(PM1)10step")
+        computePRF(true_label,predict_label, "PerFed(PM1)10step")
+        assert len(true_label)== len(predict_label)
+        accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
+        print("perfedavg pm1-10 acc:" ,accuracy)
 
 
 if __name__ == "__main__":
