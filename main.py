@@ -67,7 +67,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             if os.path.exists(model_path) and len(os.listdir(model_path))==1:
                 model_path = os.path.join(model_path,os.listdir(model_path)[0])
                 server.model = torch.load(model_path)
-                server.update_server_BN()
+                server.update_user_BN()
                 print("restored the model and BN param.")
             else:
                 print("fail to restore")

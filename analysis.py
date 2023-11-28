@@ -60,8 +60,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
         path = "models/ISIC19/FedAvg_server_285.pt"
         assert (os.path.exists(path))
-        # server.model.load_state_dict(torch.load(path))
-        server.model = torch.load(path)
+        server.model.load_state_dict(torch.load(path))
+        # server.model = torch.load(path)
         server.model = server.model.to(device)
         server.send_parameters()
         server.update_user_BN()
@@ -78,7 +78,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "pFedMe"):
         server = pFedMe(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, K, personal_learning_rate, 1)
         path = "models/ISIC19/pFedMe_server_294.pt"
-        server.model = torch.load(path)
+        server.model.load_state_dict(torch.load(path))
+        # server.model = torch.load(path)
         server.model = server.model.to(device)
         server.send_parameters()
         server.update_user_BN()
@@ -167,7 +168,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "PerAvg"):
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
         path = "models/ISIC19/PerAvg_server_259.pt"
-        server.model = torch.load(path)
+        # server.model = torch.load(path)
+        server.model.load_state_dict(torch.load(path))
         server.model = server.model.to(device)
         server.send_parameters()
         server.update_user_BN()
