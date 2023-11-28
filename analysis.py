@@ -64,7 +64,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         # server.model = torch.load(path)
         server.model = server.model.to(device)
         server.send_parameters()
-        # server.update_user_BN()
+        server.update_user_BN()
         server.aggregate_parameters()
         
         true_label, predict_label = server.test_and_get_label()
