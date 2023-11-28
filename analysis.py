@@ -64,7 +64,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         # server.model = torch.load(path)
         server.model = server.model.to(device)
         server.send_parameters()
-        server.update_user_BN()
+        # server.update_user_BN()
         server.aggregate_parameters()
         
         true_label, predict_label = server.test_and_get_label()
@@ -181,6 +181,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "PerAvg"):
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
         path = "models/ISIC19/PerAvg_server_259.pt"
+        # path = "models/Cifar10_dist_caifarnet/PerAvg_server.pt"
         # server.model = torch.load(path)
         server.model.load_state_dict(torch.load(path))
         server.model = server.model.to(device)
