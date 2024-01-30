@@ -30,7 +30,7 @@ def plot_cm(true_labels, predict_labels, model_name):
     plt.tight_layout()
     plt.colorbar()
     plt.show()
-    plt.savefig(fname=("ISIC19_plot/cm_"+model_name))
+    plt.savefig(fname=("Cifar_per_plot/cm_"+model_name))
     return plt
 
 def computePRF(true_labels, predicted_labels,model_name):
@@ -62,5 +62,5 @@ def computePRF(true_labels, predicted_labels,model_name):
     ax.legend()
 
     plt.axis([-1, len(label), 0, 1])
-    plt.savefig(fname=("ISIC19_plot/prf_"+model_name))
+    plt.savefig(fname=("Cifar_per_plot/prf_"+model_name))
     plt.show()
