@@ -1,4 +1,4 @@
-from sklearn.datasets import fetch_mldata
+# from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 from tqdm import trange
 import numpy as np
@@ -20,10 +20,10 @@ for _, train_data in enumerate(trainloader,0):
 for _, train_data in enumerate(testloader,0):
     testset.data, testset.targets = train_data
 
-random.seed(1)
-np.random.seed(1)
+random.seed(4998)
+np.random.seed(4998)
 NUM_USERS = 20 # should be muitiple of 10
-NUM_LABELS = 3
+NUM_LABELS = 2
 
 # numran1 = random.randint(10, 50)
 # numran2 = random.randint(1, 10)
@@ -65,8 +65,8 @@ y = [[] for _ in range(NUM_USERS)]
 idx = np.zeros(10, dtype=np.int64)
 for user in range(NUM_USERS):
     for j in range(NUM_LABELS):  # 3 labels for each users
-        #l = (2*user+j)%10
-        l = (user + j) % 10
+        # l = (2*user+j)%10
+        l = (user*NUM_LABELS + j) % 10
         print("L:", l)
         X[user] += cifa_data[l][idx[l]:idx[l]+10].tolist()
         y[user] += (l*np.ones(10)).tolist()
@@ -81,25 +81,28 @@ props = np.random.lognormal(
 props = np.array([[[len(v)-NUM_USERS]] for v in cifa_data]) * \
     props/np.sum(props, (1, 2), keepdims=True)
 # print("here:",props/np.sum(props,(1,2), keepdims=True))
-#props = np.array([[[len(v)-100]] for v in mnist_data]) * \
+# props = np.array([[[len(v)-100]] for v in mnist_data]) * \
 #    props/np.sum(props, (1, 2), keepdims=True)
-#idx = 1000*np.ones(10, dtype=np.int64)
+# idx = 1000*np.ones(10, dtype=np.int64)
 # print("here2:",props)
+
+sumup = 0
 for user in trange(NUM_USERS):
-    for j in range(NUM_LABELS):  # 4 labels for each users
+    for j in range(NUM_LABELS):  # 2 labels for each users
         # l = (2*user+j)%10
-        l = (user + j) % 10
+        l = (user*NUM_LABELS + j) % 10
         num_samples = int(props[l, user//int(NUM_USERS/10), j])
         numran1 = random.randint(300, 600)
         num_samples = (num_samples)  + numran1 #+ 200
         if(NUM_USERS <= 20): 
             num_samples = num_samples * 2
-        if idx[l] + num_samples < len(cifa_data[l]):
+        if idx[l] + num_samples <= len(cifa_data[l]):
             X[user] += cifa_data[l][idx[l]:idx[l]+num_samples].tolist()
             y[user] += (l*np.ones(num_samples)).tolist()
             idx[l] += num_samples
             print("check len os user:", user, j,
                   "len data", len(X[user]), num_samples)
+            print(l,"used up to",idx[l])
 
 print("IDX2:", idx) # counting samples for each labels
 

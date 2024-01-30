@@ -9,16 +9,16 @@ from utils.model_utils import read_data, read_user_data
 
 class PerAvg(Server):
     def __init__(self,device, dataset,algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-                 local_epochs, optimizer, num_users,times):
+                 local_iters, optimizer, num_users,times):
         super().__init__(device, dataset,algorithm, model[0], batch_size, learning_rate, beta, lamda, num_glob_iters,
-                         local_epochs, optimizer, num_users, times)
+                         local_iters, optimizer, num_users, times)
 
         # Initialize data for all  users
         data = read_data(dataset)
         total_users = len(data[0])
         for i in range(total_users):
             id, train , test = read_user_data(i, data, dataset)
-            user = UserPerAvg(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_epochs, optimizer ,total_users , num_users)
+            user = UserPerAvg(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_iters, optimizer ,total_users , num_users)
             self.users.append(user)
             self.total_train_samples += user.train_samples
         print("Number of users / total users:",num_users, " / " ,total_users)
@@ -35,9 +35,9 @@ class PerAvg(Server):
         for user in self.users:
             user.set_grads(grads)
 
-    def train(self):
+    def train(self, start_iter = 0):
         loss = []
-        for glob_iter in range(self.num_glob_iters):
+        for glob_iter in range(start_iter, self.num_glob_iters):
             print("-------------Round number: ",glob_iter, " -------------")
             # send all parameter for users 
             self.send_parameters()
@@ -46,13 +46,24 @@ class PerAvg(Server):
             print("Evaluate global model with one step update")
             print("")
             self.evaluate_one_step()
+            self.save_best_model(glob_iter)
 
             # choose several users to send back upated model to server
             self.selected_users = self.select_users(glob_iter,self.num_users)
+            
+            # print selected user to observe the train accuracy change
+            print("selected user: ", end='')
             for user in self.selected_users:
-                user.train(self.local_epochs) #* user.train_samples
+                print(user.id, end=' ')
+            print('')
+
+            for user in self.selected_users:
+                user.train(self.local_iters) #* user.train_samples
                 
             self.aggregate_parameters()
+            if(glob_iter % 100 == 99):
+                self.save_model(glob_iter+1)
+                self.save_results()
 
         self.save_results()
         self.save_model()

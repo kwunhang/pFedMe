@@ -10,9 +10,9 @@ import numpy as np
 
 class pFedMe(Server):
     def __init__(self, device,  dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-                 local_epochs, optimizer, num_users, K, personal_learning_rate, times):
+                 local_iters, optimizer, num_users, K, personal_learning_rate, times):
         super().__init__(device, dataset,algorithm, model[0], batch_size, learning_rate, beta, lamda, num_glob_iters,
-                         local_epochs, optimizer, num_users, times)
+                         local_iters, optimizer, num_users, times)
 
         # Initialize data for all  users
         data = read_data(dataset)
@@ -21,7 +21,7 @@ class pFedMe(Server):
         self.personal_learning_rate = personal_learning_rate
         for i in range(total_users):
             id, train , test = read_user_data(i, data, dataset)
-            user = UserpFedMe(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_epochs, optimizer, K, personal_learning_rate)
+            user = UserpFedMe(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_iters, optimizer, K, personal_learning_rate)
             self.users.append(user)
             self.total_train_samples += user.train_samples
         print("Number of users / total users:",num_users, " / " ,total_users)
@@ -38,9 +38,9 @@ class pFedMe(Server):
         for user in self.users:
             user.set_grads(grads)
 
-    def train(self):
+    def train(self, start_iter = 0):
         loss = []
-        for glob_iter in range(self.num_glob_iters):
+        for glob_iter in range(start_iter, self.num_glob_iters):
             print("-------------Round number: ",glob_iter, " -------------")
             # send all parameter for users 
             self.send_parameters()
@@ -49,21 +49,32 @@ class pFedMe(Server):
             # print("Evaluate global model")
             # print("")
             self.evaluate()
+            self.save_best_model(glob_iter)
 
             # do update for all users not only selected users
             for user in self.users:
-                user.train(self.local_epochs) #* user.train_samples
+                user.train(self.local_iters) #* user.train_samples
             
             # choose several users to send back upated model to server
             # self.personalized_evaluate()
             self.selected_users = self.select_users(glob_iter,self.num_users)
+            
+            # print selected user to observe the train accuracy change
+            print("selected user: ", end='')
+            for user in self.selected_users:
+                print(user.id, end=' ')
+            print('')
 
             # Evaluate gloal model on user for each interation
             #print("Evaluate persionalized model")
             #print("")
             self.evaluate_personalized_model()
+            self.save_best_model(glob_iter, pFedMe=True)
             #self.aggregate_parameters()
             self.persionalized_aggregate_parameters()
+            if(glob_iter % 100 == 99):
+                self.save_model(glob_iter+1)
+                self.save_results()
 
 
         #print(loss)

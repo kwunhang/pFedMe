@@ -6,15 +6,16 @@ import json
 from torch.utils.data import DataLoader
 import numpy as np
 import copy
+torch.manual_seed(0)
 
 class User:
     """
     Base class for users in federated learning.
     """
-    def __init__(self, device, id, train_data, test_data, model, batch_size = 0, learning_rate = 0, beta = 0 , lamda = 0, local_epochs = 0):
+    def __init__(self, device, id, train_data, test_data, model, batch_size = 0, learning_rate = 0, beta = 0 , lamda = 0, local_iters = 0):
 
         self.device = device
-        self.model = copy.deepcopy(model).to(self.device)
+        self.model = copy.deepcopy(model)
         self.id = id  # integer
         self.train_samples = len(train_data)
         self.test_samples = len(test_data)
@@ -22,11 +23,11 @@ class User:
         self.learning_rate = learning_rate
         self.beta = beta
         self.lamda = lamda
-        self.local_epochs = local_epochs
-        self.trainloader = DataLoader(train_data, self.batch_size,num_workers=1)
+        self.local_iters = local_iters
+        self.trainloader = DataLoader(train_data, self.batch_size, shuffle=True, num_workers=1)
         self.testloader =  DataLoader(test_data, self.batch_size,num_workers=1)
-        self.testloaderfull = DataLoader(test_data, self.test_samples,num_workers=1)
-        self.trainloaderfull = DataLoader(train_data, self.train_samples,num_workers=1)
+        self.testloaderfull = DataLoader(test_data, self.batch_size,num_workers=1)
+        self.trainloaderfull = DataLoader(train_data, self.batch_size,num_workers=1)
         self.iter_trainloader = iter(self.trainloader)
         self.iter_testloader = iter(self.testloader)
 
@@ -34,14 +35,11 @@ class User:
         self.local_model = copy.deepcopy(list(self.model.parameters()))
         self.persionalized_model = copy.deepcopy(list(self.model.parameters()))
         self.persionalized_model_bar = copy.deepcopy(list(self.model.parameters()))
-        # print("local:", str(self.local_model[0].is_cuda))
-        self.model.to("cpu")
-        # print("local later:", str(self.local_model[0].is_cuda))
     
     def set_parameters(self, model):
         for old_param, new_param, local_param in zip(self.model.parameters(), model.parameters(), self.local_model):
             old_param.data = new_param.data.clone()
-            local_param.data = new_param.data.clone().to(self.device)
+            local_param.data = new_param.data.clone()
         #self.local_weight_updated = copy.deepcopy(self.optimizer.param_groups[0]['params'])
 
     def get_parameters(self):
@@ -71,65 +69,84 @@ class User:
         return grads
 
     def test(self):
-        self.model.to(self.device)
         self.model.eval()
         test_acc = 0
-        for x, y in self.testloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            #@loss += self.loss(output, y)
-            #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
-            #print(self.id + ", Test Loss:", loss)
-        self.model.to("cpu")
-        return test_acc, y.shape[0]
+        with torch.no_grad():
+            for x, y in self.testloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                #@loss += self.loss(output, y)
+                #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
+                #print(self.id + ", Test Loss:", loss)
+        return test_acc, self.test_samples
+    
+    def test_and_get_label(self):
+        self.model.eval()
+        predict_label = []
+        true_label = [] 
+        # test_acc = 0
+        with torch.no_grad():
+            for x, y in self.testloaderfull:
+                true_label.extend(y.numpy())
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                predict = (torch.argmax(output, dim=1) )
+                predict_label.extend(predict.cpu().numpy())
+                # test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                #@loss += self.loss(output, y)
+                # print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
+                #print(self.id + ", Test Loss:", loss)
+        return true_label, predict_label
 
     def train_error_and_loss(self):
-        self.model.to(self.device)
         self.model.eval()
         train_acc = 0
         loss = 0
-        for x, y in self.trainloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            loss += self.loss(output, y)
+        with torch.no_grad():
+            for x, y in self.trainloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                loss += self.loss(output, y) * y.shape[0]
             #print(self.id + ", Train Accuracy:", train_acc)
             #print(self.id + ", Train Loss:", loss)
-        self.model.to("cpu")
+            
+            # change for case not full loader
+            loss /= self.train_samples
         return train_acc, loss , self.train_samples
     
     def test_persionalized_model(self):
-        self.model.to(self.device)
         self.model.eval()
         test_acc = 0
         self.update_parameters(self.persionalized_model_bar)
-        for x, y in self.testloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+        with torch.no_grad():
+            for x, y in self.testloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
             #@loss += self.loss(output, y)
             #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
             #print(self.id + ", Test Loss:", loss)
         self.update_parameters(self.local_model)
-        self.model.to("cpu")
-        return test_acc, y.shape[0]
+        return test_acc,self.test_samples
 
     def train_error_and_loss_persionalized_model(self):
-        self.model.to(self.device)
         self.model.eval()
         train_acc = 0
         loss = 0
         self.update_parameters(self.persionalized_model_bar)
-        for x, y in self.trainloaderfull:
-            x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
-            train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
-            loss += self.loss(output, y)
+        with torch.no_grad():
+            for x, y in self.trainloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                # loss += self.loss(output, y)
+                loss += self.loss(output, y) * y.shape[0]
             #print(self.id + ", Train Accuracy:", train_acc)
             #print(self.id + ", Train Loss:", loss)
+            loss /= self.train_samples
         self.update_parameters(self.local_model)
-        self.model.to("cpu")
         return train_acc, loss , self.train_samples
     
     def get_next_train_batch(self):
@@ -161,6 +178,15 @@ class User:
     def load_model(self):
         model_path = os.path.join("models", self.dataset)
         self.model = torch.load(os.path.join(model_path, "server" + ".pt"))
+    
+    def user_upload_BN(self):
+        self.model.train()
+        for X, y in self.trainloader:
+            # self.optimizer.zero_grad()
+            X = X.to(self.device)
+            output = self.model(X)
+            # loss = self.loss(output, y)
+            # loss.backward()
     
     @staticmethod
     def model_exists():
