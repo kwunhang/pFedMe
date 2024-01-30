@@ -64,6 +64,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         # server.model = torch.load(path)
         server.model = server.model.to(device)
         server.send_parameters()
+        server.update_server_BN()
         server.update_user_BN()
         server.aggregate_parameters()
         
@@ -82,6 +83,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         # server.model = torch.load(path)
         server.model = server.model.to(device)
         server.send_parameters()
+        server.update_server_BN()
         server.update_user_BN()
         server.aggregate_parameters()
             # make prediction to global model
@@ -186,6 +188,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         server.model.load_state_dict(torch.load(path))
         server.model = server.model.to(device)
         server.send_parameters()
+        server.update_server_BN()
         server.update_user_BN()
         server.aggregate_parameters()
         # make prediction to global model
