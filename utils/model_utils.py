@@ -8,6 +8,14 @@ import torchvision.transforms as transforms
 from tqdm import trange
 import numpy as np
 import random
+from torch.utils.data import Dataset, DataLoader
+
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 IMAGE_SIZE = 28
 IMAGE_PIXELS = IMAGE_SIZE * IMAGE_SIZE
@@ -241,8 +249,11 @@ def read_cifa_data():
     return train_data['users'], _ , train_data['user_data'], test_data['user_data']
 
 def read_data_byClient(dataset):
-    train_data_dir = os.path.join('data',dataset,'data', 'train')
-    test_data_dir = os.path.join('data',dataset,'data', 'test')
+    data_path = os.getenv('DATA_PATH')
+    if data_path == None or data_path == "":
+        data_path = 'data'
+    train_data_dir = os.path.join(data_path,dataset,'data', 'train')
+    test_data_dir = os.path.join(data_path,dataset,'data', 'test')
     clients = []
     train_data = {}
     test_data = {}
@@ -286,7 +297,7 @@ def read_data(dataset):
     #     clients, groups, train_data, test_data = read_cifa_data()
     #     return clients, groups, train_data, test_data
     
-    if(dataset == "Cifar10ByClient" or dataset == "ISIC19"):
+    if(dataset == "Cifar10ByClient" or dataset == "ISIC19" or dataset == "ISIC19_raw"):
         clients, train_data, test_data = read_data_byClient(dataset)
         return clients, [], train_data, test_data
         
@@ -338,7 +349,7 @@ def read_user_data(index,data,dataset):
         y_train = torch.Tensor(y_train).type(torch.int64)
         X_test = torch.Tensor(X_test).view(-1, NUM_CHANNELS_CIFAR, IMAGE_SIZE_CIFAR, IMAGE_SIZE_CIFAR).type(torch.float32)
         y_test = torch.Tensor(y_test).type(torch.int64)
-    elif(dataset == "ISIC19"):
+    elif(dataset.startswith("ISIC19")):
         X_train = torch.Tensor(X_train).view(-1, 3, 224, 224).type(torch.float32)
         y_train = torch.Tensor(y_train).type(torch.int64)
         X_test = torch.Tensor(X_test).view(-1, 3, 224, 224).type(torch.float32)
@@ -351,6 +362,14 @@ def read_user_data(index,data,dataset):
     
     train_data = [(x, y) for x, y in zip(X_train, y_train)]
     test_data = [(x, y) for x, y in zip(X_test, y_test)]
+    
+    if(dataset == "ISIC19_raw"):
+        print("load dataset for ISIC19_raw case")
+        train_data = ISIC19Dataset(train_data)
+        test_data = ISIC19Dataset(test_data)
+        print("print sample")
+        print(train_data.get_sample(1))
+    
     return id, train_data, test_data
 
 class Metrics(object):
@@ -392,3 +411,52 @@ class Metrics(object):
             os.mkdir(os.path.join('out', self.params['dataset']))
         with open(metrics_dir, 'w') as ouf:
             json.dump(metrics, ouf)
+
+class ISIC19Dataset(Dataset):
+    """ISIC19 raw dataset in tensor (convert from numpy)"""
+    """Assume the input is just resize to 244 and without normalization"""
+
+    def __init__(self, data, transform=None):
+        """
+        Arguments:
+            data (array): Array of X,Y tuple with tensor data.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        self.data = data
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+        x, y = self.data[idx]
+
+        # img_name = os.path.join(self.root_dir,
+        #                         self.landmarks_frame.iloc[idx, 0])
+        # image = io.imread(img_name)
+        # landmarks = self.landmarks_frame.iloc[idx, 1:]
+        # landmarks = np.array([landmarks], dtype=float).reshape(-1, 2)
+        # sample = {'image': image, 'landmarks': landmarks}
+
+        if self.transform:
+            x = self.transform(x)
+
+        return x,y
+    
+    def get_sample(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+        x, y = self.data[idx]
+
+        return x,y
+    
+    def collate_fn(self, batch):
+        images, labels = list(zip(*batch))
+        images, labels = [[tensor[None] for tensor in subset] for subset in (images, labels)]
+        images, labels = [torch.cat(subset, dim=0) for subset in (images, labels)]
+        return images, labels

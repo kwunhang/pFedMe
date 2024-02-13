@@ -35,7 +35,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         if(model == "cnn"):
             if(dataset == "Mnist"):
                 model = Net().to(device), model
-            elif(dataset == "Cifar10" or dataset == "Cifar10ByClient"):
+            elif(dataset.startswith("Cifar10")):
                 # model = ResNet18().to(device), model
                 model = CifarNet().to(device), model
             
@@ -46,10 +46,10 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 model = DNN(60,20,10).to(device), model
         
         if(model == "cnn_nBN"):
-            if(dataset == "Cifar10" or dataset == "Cifar10ByClient"):
+            if(dataset.startswith("Cifar10")):
                 model = CifarNetNoBN().to(device), model
         if(model == "cnn"):
-            if(dataset == "ISIC19"):
+            if(dataset.startswith("ISIC19")):
                 model = ResNet18_isic19(8).to(device), model
 
         # select algorithm
@@ -86,7 +86,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19"])
+    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw"])
     parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn", "cnn_nBN"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")

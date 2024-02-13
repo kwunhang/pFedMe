@@ -292,7 +292,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19"])
+    parser.add_argument("--dataset", type=str, default="Cifar10")
     parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
