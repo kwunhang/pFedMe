@@ -368,7 +368,7 @@ def read_user_data(index,data,dataset):
         train_data = ISIC19Dataset(train_data)
         test_data = ISIC19Dataset(test_data)
         print("print sample")
-        print(train_data.get_sample(1))
+        print(train_data.get_sample)
     
     return id, train_data, test_data
 
