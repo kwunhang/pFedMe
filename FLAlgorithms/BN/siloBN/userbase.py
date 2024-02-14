@@ -169,8 +169,9 @@ class User:
             (X, y) = next(self.iter_testloader)
         return (X.to(self.device), y.to(self.device))
 
-    def save_model(self):
-        model_path = os.path.join("models", self.dataset)
+    def save_model(self, model_path=None):
+        if model_path == None:
+            model_path = os.path.join("models", self.dataset)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         torch.save(self.model, os.path.join(model_path, "user_" + self.id + ".pt"))

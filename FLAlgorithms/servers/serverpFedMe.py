@@ -72,13 +72,15 @@ class pFedMe(Server):
             self.save_best_model(glob_iter, pFedMe=True)
             #self.aggregate_parameters()
             self.persionalized_aggregate_parameters()
-            if(glob_iter % 100 == 99):
-                self.save_model(glob_iter+1)
-                self.save_results()
+            # if(glob_iter % 100 == 99):
+            #     self.save_model(glob_iter+1)
+            #     self.save_all_client_model(glob_iter+1)
+            #     self.save_results()
 
 
         #print(loss)
         self.save_results()
         self.save_model()
+        self.save_all_client_model()
     
   
