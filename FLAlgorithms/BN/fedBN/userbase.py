@@ -43,7 +43,7 @@ class User:
             layer_name, new_param = new_layer
             if layer_name.startswith("batch"):
                 # keep all BN layer params
-                print("debug: check for detect BN layer")
+                # print("debug: check for detect BN layer")
                 local_param.data = old_param.data.clone()
             else:
                 old_param.data = new_param.data.clone()
