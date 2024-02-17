@@ -35,8 +35,12 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         if(dataset == "Mnist"):
             model = Net().to(device), model
         elif(dataset == "Cifar10" or dataset == "Cifar10ByClient"):
-            # model = ResNet18().to(device), model
-            model = CifarNet().to(device), model
+            if "res" in analysis_file:
+                model = ResNet18().to(device), model
+            else:
+                model = CifarNet().to(device), model
+        elif(dataset == "ISIC19"):
+            model = ResNet18_isic19(8).to(device), model
         
     if(model == "dnn"):
         if(dataset == "Mnist"):
@@ -48,9 +52,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         if(dataset.startswith("Cifar10")):
             model = CifarNetNoBN().to(device), model
 
-    if(model == "cnn"):
-        if(dataset == "ISIC19"):
-            model = ResNet18_isic19(8).to(device), model
+    
+
+    
+    
     
     # path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
     # model = model[0].to(cpu)
