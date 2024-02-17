@@ -82,20 +82,29 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
 
     # global model 
-    # assert (os.path.exists(path))
-    # server.model.load_state_dict(torch.load(path))
-    
     assert (os.path.exists(path))
-    with h5py.File(path, 'r') as hf:
-        # Assuming 'rs_glob_acc', 'rs_train_acc', and 'rs_train_loss' are the datasets in the h5 file
-        print("Keys: %s" % hf.keys())
+    
+    # check file type
+    
+    if(path.endswith(".pt")):   
+        server.model.load_state_dict(torch.load(path))
+    elif(path.endswith(".h5")):
+        with h5py.File(path, 'r') as hf:
+            # Load the data from the h5 file using the keys
+            rs_glob_acc = hf['rs_glob_acc'][:]
+            rs_train_acc = hf['rs_train_acc'][:]
+            rs_train_loss = hf['rs_train_loss'][:]
+    
+        server.rs_glob_acc = rs_glob_acc
+        server.rs_train_acc = rs_train_acc
+        server.rs_train_loss = rs_train_loss
+    
     # server.model = torch.load(path)
     server.model = server.model.to(device)
     server.send_parameters()
     server.update_server_BN()
     server.update_user_BN()
     server.aggregate_parameters()
-    
     
     true_label, predict_label = server.test_and_get_label()
     plot_function(true_label, predict_label, algorithm)
