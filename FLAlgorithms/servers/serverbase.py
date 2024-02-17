@@ -89,15 +89,41 @@ class Server:
 
     def save_model(self, global_iter=None):
         saveModel = copy.deepcopy(self.model).to(cpu)
-        model_path = os.path.join("models", self.dataset)
+        model_path = os.getenv('SAVE_MODEL_PATH')
+        if model_path == None or model_path == "":
+            model_path = "models"
+        model_path = os.path.join(model_path, self.dataset)
+        if global_iter:
+            model_path = os.path.join(model_path, "iter_" + global_iter)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
-        if global_iter:
-            # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
-            torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
-        else:
-            # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
-            torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        # if global_iter:
+        #     # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+        #     torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+        # else:
+        #     # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        #     torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+
+    def save_all_client_model(self, global_iter=None, model_path=None):
+        if model_path==None:
+            model_path = os.getenv('SAVE_MODEL_PATH')
+            if model_path == None or model_path == "":
+                model_path = "models"
+            model_path = os.path.join(model_path, self.dataset)
+            if global_iter:
+                model_path = os.path.join(model_path, "iter_" + global_iter)
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+        for user in self.users:
+            user.save_model(model_path)
+        # if global_iter:
+        #     # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+        #     torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+        # else:
+        #     # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        #     torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
@@ -392,14 +418,18 @@ class Server:
     def save_best_model(self, step = None, pFedMe= False):
         if (self.save_best== True):
             saveModel = copy.deepcopy(self.model).to(cpu)
-            model_path = os.path.join("models", self.dataset)
+            model_path = os.getenv('SAVE_MODEL_PATH')
+            if model_path == None or model_path == "":
+                model_path = "models"
+            model_path = os.path.join(model_path, self.dataset)
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
             model_path = os.path.join(model_path, "bestModel")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
             if pFedMe == False:
-                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(step) + ".pt"))
+                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
             else:
-                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_bestPersonModel_" + str(step) + ".pt"))
+                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_bestPersonModel_" + ".pt"))
+            self.save_all_client_model(model_path=model_path)
             self.save_best= False

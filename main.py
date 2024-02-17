@@ -14,6 +14,10 @@ from utils.plot_utils import *
 import torch
 torch.manual_seed(0)
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, restore, itered):
@@ -36,8 +40,8 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             if(dataset == "Mnist"):
                 model = Net().to(device), model
             elif(dataset.startswith("Cifar10")):
-                # model = ResNet18().to(device), model
-                model = CifarNet().to(device), model
+                model = ResNet18().to(device), model
+                # model = CifarNet().to(device), model
             
         if(model == "dnn"):
             if(dataset == "Mnist"):

@@ -62,13 +62,16 @@ class FedAvg(Server):
             #loss_ /= self.total_train_samples
             #loss.append(loss_)
             #print(loss_)
-            if(glob_iter % 100 == 99):
-                self.save_model(glob_iter+1)
-                self.save_results()
-        print("final check" + "!"*30)
+            
+            # if(glob_iter % 100 == 99):
+            #     self.save_model(glob_iter+1)
+            #     self.save_all_client_model(glob_iter+1)
+            #     self.save_results()
+
         self.send_parameters()
         # Evaluate model each interation
         self.evaluate()
         #print(loss)
         self.save_results()
         self.save_model()
+        self.save_all_client_model()

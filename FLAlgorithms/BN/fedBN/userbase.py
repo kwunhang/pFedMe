@@ -8,6 +8,7 @@ import numpy as np
 import copy
 torch.manual_seed(0)
 
+# FedBN version
 class User:
     """
     Base class for users in federated learning.
@@ -33,13 +34,20 @@ class User:
 
         # those parameters are for persionalized federated learing.
         self.local_model = copy.deepcopy(list(self.model.parameters()))
-        self.persionalized_model = copy.deepcopy(list(self.model.parameters()))
         self.persionalized_model_bar = copy.deepcopy(list(self.model.parameters()))
     
+    # fedBN, use original batch layer param
+    # Refer to torch src code, parameter is sub-function of named_parameters, the order shd be the same
     def set_parameters(self, model):
-        for old_param, new_param, local_param in zip(self.model.parameters(), model.parameters(), self.local_model):
-            old_param.data = new_param.data.clone()
-            local_param.data = new_param.data.clone()
+        for old_param, new_layer, local_param in zip(self.model.parameters(), model.named_parameters(), self.local_model):
+            layer_name, new_param = new_layer
+            if layer_name.startswith("batch"):
+                # keep all BN layer params
+                # print("debug: check for detect BN layer")
+                local_param.data = old_param.data.clone()
+            else:
+                old_param.data = new_param.data.clone()
+                local_param.data = new_param.data.clone()
         #self.local_weight_updated = copy.deepcopy(self.optimizer.param_groups[0]['params'])
 
     def get_parameters(self):

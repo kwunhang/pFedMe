@@ -61,9 +61,11 @@ class PerAvg(Server):
                 user.train(self.local_iters) #* user.train_samples
                 
             self.aggregate_parameters()
-            if(glob_iter % 100 == 99):
-                self.save_model(glob_iter+1)
-                self.save_results()
+            # if(glob_iter % 100 == 99):
+            #     self.save_model(glob_iter+1)
+            #     self.save_all_client_model(glob_iter+1)
+            #     self.save_results()
 
         self.save_results()
         self.save_model()
+        self.save_all_client_model()
