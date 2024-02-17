@@ -73,7 +73,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
 
 
-    def plot_function(true_label, predict_label, graph_name):
+    def plot_function(true_label, predict_label, graph_name, ):
         plot_cm(true_label,predict_label, graph_name)
         computePRF(true_label,predict_label, graph_name)
         assert len(true_label)== len(predict_label)
@@ -101,7 +101,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     plot_function(true_label, predict_label, algorithm)
 
     # personalize --> pFedMe and PerAvg only
-    if(algorithm == "pFedMe" | algorithm == "PerAvg"):
+    if(algorithm == "pFedMe" or algorithm == "PerAvg"):
         # make prediction with personal model with 1step gradient decent
         true_label = []
         predict_label = []
