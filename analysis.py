@@ -86,12 +86,9 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     # server.model.load_state_dict(torch.load(path))
     
     assert (os.path.exists(path))
-    with h5py.File(path, 'r') as f:
-        # Assuming 'model_weights' is the key where model weights are stored in the h5 file
-        model_weights = f['model_weights']
-        # Assign the weights to your PyTorch model
-        server.model.load_state_dict({k: torch.tensor(v) for k, v in model_weights.items()})
-
+    with h5py.File(path, 'r') as hf:
+        # Assuming 'rs_glob_acc', 'rs_train_acc', and 'rs_train_loss' are the datasets in the h5 file
+        print("Keys: %s" % hf.keys())
     # server.model = torch.load(path)
     server.model = server.model.to(device)
     server.send_parameters()
