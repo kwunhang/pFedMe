@@ -9,7 +9,6 @@ from tqdm import trange
 import numpy as np
 import random
 from torch.utils.data import Dataset, DataLoader
-from torchvision.transforms import v2
 
 
 # import albumentations as A
@@ -383,15 +382,16 @@ def read_user_data(index,data,dataset):
     return id, train_data, test_data
 
 def train_transforms():
-    transforms = v2.Compose([
+    transforms = transforms.Compose([
             transforms.ColorJitter(brightness=(0.9, 1.1)),
             transforms.ColorJitter(contrast=(0.8, 1.2)),
-            v2.RandomHorizontalFlip(p=0.5),
-            v2.RandomVerticalFlip(p=0.5),
-            v2.ToDtype(torch.float32, scale=True),
-            v2.ToTensor(),
-            v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomVerticalFlip(p=0.5),
+            transforms.ToDtype(torch.float32, scale=True),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
+    return transforms
     # transforms = A.Compose([
     #     A.RandomBrightnessContrast(
     #         brightness_limit=0.1, 
@@ -408,10 +408,17 @@ def train_transforms():
     #     A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
     #     ToTensorV2(p=1.0),
     # ], p=1.0)
-    return transforms
+    
 
 # only resize, scale [-1, 1] and converting to tensor array[h,w,c] -> tensor[c,h,w]
 def valid_transforms():
+    transforms = transforms.Compose([
+            transforms.ColorJitter(brightness=(0.9, 1.1)),
+            transforms.ColorJitter(contrast=(0.8, 1.2)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+    return transforms
     # transforms = A.Compose([
     #                   A.LongestMaxSize(max_size=224),
     #                   A.PadIfNeeded(min_height=224, min_width=224),
