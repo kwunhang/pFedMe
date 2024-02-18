@@ -26,6 +26,7 @@ def plot_function(true_label, predict_label, graph_name):
         assert len(true_label)== len(predict_label)
         accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
         print("{} acc:".format(graph_name) ,accuracy)
+        return "{} acc:".format(graph_name) + accuracy
     
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file):

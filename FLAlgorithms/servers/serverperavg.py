@@ -78,19 +78,33 @@ class PerAvg(Server):
                 user.train_one_step()
                 
     def plot_graph(self):
+        acc_log = []
         graph_name = self.dataset + self.algorithm
         self.send_parameters()
         true_label, predict_label = self.test_and_get_label()
-        plot_function(true_label, predict_label, graph_name)
+        acc = plot_function(true_label, predict_label, graph_name)
+        acc_log.append(acc)
         
         self.trainAllClient(step=1)
         true_label, predict_label = self.test_and_get_label()
-        plot_function(true_label, predict_label, "{}(PM)1step".format(graph_name))
+        acc = plot_function(true_label, predict_label, "{}(PM)1step".format(graph_name))
+        acc_log.append(acc)
         
         self.trainAllClient(step=4)
         true_label, predict_label = self.test_and_get_label()
-        plot_function(true_label, predict_label, "{}(PM)5step".format(graph_name))
+        acc = plot_function(true_label, predict_label, "{}(PM)5step".format(graph_name))
+        acc_log.append(acc)
         
         self.trainAllClient(step=5)
         true_label, predict_label = self.test_and_get_label()
-        plot_function(true_label, predict_label, "{}(PM)10step".format(graph_name))
+        acc = plot_function(true_label, predict_label, "{}(PM)10step".format(graph_name))
+        acc_log.append(acc)
+                
+        plot_path = os.getenv('SAVE_PLOT_PATH')
+        if plot_path == None or plot_path == "":
+            plot_path = "plot"
+        full_path = os.path.join(plot_path, "acc_log.txt")
+        
+        with open(full_path, 'w') as f:
+            for i in acc_log:
+                f.write(i+"\n")

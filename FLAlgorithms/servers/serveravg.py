@@ -78,7 +78,18 @@ class FedAvg(Server):
         self.save_all_client_model()
     
     def plot_graph(self):
+        acc_log = []
         graph_name = self.dataset + self.algorithm
         self.send_parameters()
         true_label, predict_label = self.test_and_get_label()
-        plot_function(true_label, predict_label, graph_name)
+        log = plot_function(true_label, predict_label, graph_name)
+        acc_log.append(log)
+        
+        plot_path = os.getenv('SAVE_PLOT_PATH')
+        if plot_path == None or plot_path == "":
+            plot_path = "plot"
+        full_path = os.path.join(plot_path, "acc_log.txt")
+        
+        with open(full_path, 'w') as f:
+            for i in acc_log:
+                f.write(i+"\n")
