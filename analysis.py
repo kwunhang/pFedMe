@@ -101,8 +101,12 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         server.aggregate_parameters()
         
         true_label, predict_label = server.test_and_get_label()
-        plot_function(true_label, predict_label, algorithm)
-
+        
+        if "res" in analysis_file:    
+            plot_function(true_label, predict_label, algorithm+"_"+"ResNet")
+        else:
+            plot_function(true_label, predict_label, algorithm)
+            
         # personalize --> pFedMe and PerAvg only
         if(algorithm == "pFedMe" or algorithm == "PerAvg"):
             # make prediction with personal model with 1step gradient decent
@@ -115,7 +119,11 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                     user.train_one_step()
                 
             true_label, predict_label = server.test_and_get_label()
-            plot_function(true_label, predict_label, "{}(PM1)1step".format(algorithm))
+            
+            if "res" in analysis_file:    
+                plot_function(true_label, predict_label, "{}(PM1)1step".format(algorithm+"_"+"ResNet"))
+            else:
+                plot_function(true_label, predict_label, "{}(PM1)1step".format(algorithm))
             
             # make prediction to with personal model of user 0
             true_label = []
@@ -132,8 +140,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                         predict = (torch.argmax(output, dim=1) )
                         predict_label.extend(predict.cpu().numpy())
                         
-                        
-            plot_function(true_label, predict_label, "{}(PM2)1step".format(algorithm))
+            if "res" in analysis_file:    
+                plot_function(true_label, predict_label, "{}(PM2)1step".format(algorithm+"_"+"ResNet"))
+            else:
+                plot_function(true_label, predict_label, "{}(PM2)1step".format(algorithm))
             
             # 4 more steps 
             
@@ -150,7 +160,11 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                     user.train_one_step()
                 
             true_label, predict_label = server.test_and_get_label()
-            plot_function(true_label, predict_label, "{}(PM1)5step".format(algorithm))
+            
+            if "res" in analysis_file:    
+                plot_function(true_label, predict_label, "{}(PM1)5step".format(algorithm+"_"+"ResNet"))
+            else:
+                plot_function(true_label, predict_label, "{}(PM1)5step".format(algorithm))
             
             # make prediction to with personal model of user 0
             true_label = []
@@ -167,7 +181,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                         predict = (torch.argmax(output, dim=1) )
                         predict_label.extend(predict.cpu().numpy())
             
-            plot_function(true_label, predict_label, "{}(PM2)5step".format(algorithm))
+            if "res" in analysis_file:    
+                plot_function(true_label, predict_label, "{}(PM2)5step".format(algorithm+"_"+"ResNet"))
+            else:
+                plot_function(true_label, predict_label, "{}(PM2)5step".format(algorithm))
             
             # make prediction with personal model with 5step gradient decent
             true_label = []
@@ -182,10 +199,17 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                     user.train_one_step()
                 
             true_label, predict_label = server.test_and_get_label()
-            plot_function(true_label, predict_label, "{}(PM1)10step".format(algorithm))
+            
+            if "res" in analysis_file:    
+                plot_function(true_label, predict_label, "{}(PM1)10step".format(algorithm+"_"+"ResNet"))
+            else:
+                plot_function(true_label, predict_label, "{}(PM1)10step".format(algorithm))
 
     elif(path.endswith(".h5")):
-        plot_train_results(path, algorithm)
+        if "res" in analysis_file:    
+            plot_train_results(path, algorithm+"_"+"ResNet")
+        else:
+            plot_train_results(path, algorithm)
     
 
 if __name__ == "__main__":
