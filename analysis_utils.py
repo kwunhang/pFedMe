@@ -81,6 +81,7 @@ def plot_train_results(h5_path, model_name):
     plt.title('{} Train Loss'.format(model_name))
     plt.legend()
     plt.show()
+    plt.savefig(fname=("Cifar_per_plot/loss_"+model_name))
 
     # Plot train accuracy
     plt.figure(figsize=(10, 5))
@@ -90,6 +91,7 @@ def plot_train_results(h5_path, model_name):
     plt.title('{} Train Accuracy'.format(model_name))
     plt.legend()
     plt.show()
+    plt.savefig(fname=("Cifar_per_plot/acc_"+model_name))
 
     # Plot global accuracy
     plt.figure(figsize=(10, 5))
@@ -99,3 +101,6 @@ def plot_train_results(h5_path, model_name):
     plt.title('{} Global Accuracy'.format(model_name))
     plt.legend()
     plt.show()
+    plt.savefig(fname=("Cifar_per_plot/global_acc_"+model_name))
+    
+    return plt
