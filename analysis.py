@@ -89,8 +89,22 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     # global model 
     assert (os.path.exists(path))
     
-    # check file type
+
     
+    
+    # graph name implementation
+    graph_name = algorithm
+    if "res" in analysis_file:    
+        graph_name = graph_name+"_"+"ResNet"
+    
+    if("silo" in analysis_file):
+        graph_name = graph_name+"_"+"silo"
+    elif("fed" in analysis_file):
+        graph_name = graph_name+"_"+"fed"
+
+    
+    
+    # check file type
     if(path.endswith(".pt")):   
         server.model.load_state_dict(torch.load(path))
                 # server.model = torch.load(path)
@@ -101,11 +115,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         server.aggregate_parameters()
         
         true_label, predict_label = server.test_and_get_label()
-        
-        if "res" in analysis_file:    
-            plot_function(true_label, predict_label, algorithm+"_"+"ResNet")
-        else:
-            plot_function(true_label, predict_label, algorithm)
+        plot_function(true_label, predict_label, graph_name)
             
         # personalize --> pFedMe and PerAvg only
         if(algorithm == "pFedMe" or algorithm == "PerAvg"):
@@ -120,10 +130,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                 
             true_label, predict_label = server.test_and_get_label()
             
-            if "res" in analysis_file:    
-                plot_function(true_label, predict_label, "{}(PM1)1step".format(algorithm+"_"+"ResNet"))
-            else:
-                plot_function(true_label, predict_label, "{}(PM1)1step".format(algorithm))
+            plot_function(true_label, predict_label, "{}(PM1)1step".format(graph_name))
+
             
             # make prediction to with personal model of user 0
             true_label = []
@@ -140,10 +148,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                         predict = (torch.argmax(output, dim=1) )
                         predict_label.extend(predict.cpu().numpy())
                         
-            if "res" in analysis_file:    
-                plot_function(true_label, predict_label, "{}(PM2)1step".format(algorithm+"_"+"ResNet"))
-            else:
-                plot_function(true_label, predict_label, "{}(PM2)1step".format(algorithm))
+            plot_function(true_label, predict_label, "{}(PM2)1step".format(graph_name))
             
             # 4 more steps 
             
@@ -160,11 +165,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                     user.train_one_step()
                 
             true_label, predict_label = server.test_and_get_label()
-            
-            if "res" in analysis_file:    
-                plot_function(true_label, predict_label, "{}(PM1)5step".format(algorithm+"_"+"ResNet"))
-            else:
-                plot_function(true_label, predict_label, "{}(PM1)5step".format(algorithm))
+             
+            plot_function(true_label, predict_label, "{}(PM1)5step".format(graph_name))
             
             # make prediction to with personal model of user 0
             true_label = []
@@ -181,10 +183,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                         predict = (torch.argmax(output, dim=1) )
                         predict_label.extend(predict.cpu().numpy())
             
-            if "res" in analysis_file:    
-                plot_function(true_label, predict_label, "{}(PM2)5step".format(algorithm+"_"+"ResNet"))
-            else:
-                plot_function(true_label, predict_label, "{}(PM2)5step".format(algorithm))
+            plot_function(true_label, predict_label, "{}(PM2)5step".format(graph_name))
             
             # make prediction with personal model with 5step gradient decent
             true_label = []
@@ -200,17 +199,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                 
             true_label, predict_label = server.test_and_get_label()
             
-            if "res" in analysis_file:    
-                plot_function(true_label, predict_label, "{}(PM1)10step".format(algorithm+"_"+"ResNet"))
-            else:
-                plot_function(true_label, predict_label, "{}(PM1)10step".format(algorithm))
+            plot_function(true_label, predict_label, "{}(PM1)10step".format(graph_name))
 
     elif(path.endswith(".h5")):
-        if "res" in analysis_file:    
-            plot_train_results(path, algorithm+"_"+"ResNet")
-        else:
-            plot_train_results(path, algorithm)
-    
+        plot_train_results(path, graph_name)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
