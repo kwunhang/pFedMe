@@ -382,7 +382,7 @@ def read_user_data(index,data,dataset):
     return id, train_data, test_data
 
 def train_transforms():
-    transforms = transforms.Compose([
+    transform = transforms.Compose([
             transforms.ColorJitter(brightness=(0.9, 1.1)),
             transforms.ColorJitter(contrast=(0.8, 1.2)),
             transforms.RandomHorizontalFlip(p=0.5),
@@ -391,7 +391,7 @@ def train_transforms():
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
-    return transforms
+    return transform
     # transforms = A.Compose([
     #     A.RandomBrightnessContrast(
     #         brightness_limit=0.1, 
@@ -412,13 +412,13 @@ def train_transforms():
 
 # only resize, scale [-1, 1] and converting to tensor array[h,w,c] -> tensor[c,h,w]
 def valid_transforms():
-    transforms = transforms.Compose([
+    transform = transforms.Compose([
             transforms.ColorJitter(brightness=(0.9, 1.1)),
             transforms.ColorJitter(contrast=(0.8, 1.2)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
-    return transforms
+    return transform
     # transforms = A.Compose([
     #                   A.LongestMaxSize(max_size=224),
     #                   A.PadIfNeeded(min_height=224, min_width=224),
