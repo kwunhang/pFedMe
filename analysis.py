@@ -11,7 +11,7 @@ from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.trainmodel.models import *
 from utils.plot_utils import *
 import torch
-from analysis_utils import plot_cm, computePRF
+from analysis_utils import plot_cm, computePRF, plot_train_results
 
 from utils.model_utils import read_data, read_user_data
 
@@ -78,7 +78,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
 
 
-    def plot_function(true_label, predict_label, graph_name, ):
+    def plot_function(true_label, predict_label, graph_name):
         plot_cm(true_label,predict_label, graph_name)
         computePRF(true_label,predict_label, graph_name)
         assert len(true_label)== len(predict_label)
@@ -93,107 +93,100 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     
     if(path.endswith(".pt")):   
         server.model.load_state_dict(torch.load(path))
-    elif(path.endswith(".h5")):
-        with h5py.File(path, 'r') as hf:
-            # Load the data from the h5 file using the keys
-            rs_glob_acc = hf['rs_glob_acc'][:]
-            rs_train_acc = hf['rs_train_acc'][:]
-            rs_train_loss = hf['rs_train_loss'][:]
-    
-        server.rs_glob_acc = rs_glob_acc
-        server.rs_train_acc = rs_train_acc
-        server.rs_train_loss = rs_train_loss
-    
-    # server.model = torch.load(path)
-    server.model = server.model.to(device)
-    server.send_parameters()
-    server.update_server_BN()
-    server.update_user_BN()
-    server.aggregate_parameters()
-    
-    true_label, predict_label = server.test_and_get_label()
-    plot_function(true_label, predict_label, algorithm)
+                # server.model = torch.load(path)
+        server.model = server.model.to(device)
+        server.send_parameters()
+        server.update_server_BN()
+        server.update_user_BN()
+        server.aggregate_parameters()
+        
+        true_label, predict_label = server.test_and_get_label()
+        plot_function(true_label, predict_label, algorithm)
 
-    # personalize --> pFedMe and PerAvg only
-    if(algorithm == "pFedMe" or algorithm == "PerAvg"):
-        # make prediction with personal model with 1step gradient decent
-        true_label = []
-        predict_label = []
-        for user in server.users:
-            if(algorithm == "pFedMe"):
-                user.train(1)
-            elif(algorithm == "PerAvg"):
-                user.train_one_step()
-            
-        true_label, predict_label = server.test_and_get_label()
-        plot_function(true_label, predict_label, "{}(PM1)1step".format(algorithm))
-        
-        # make prediction to with personal model of user 0
-        true_label = []
-        predict_label = []
-        model = server.users[0].model
-        model.eval()
-        with torch.no_grad():
+        # personalize --> pFedMe and PerAvg only
+        if(algorithm == "pFedMe" or algorithm == "PerAvg"):
+            # make prediction with personal model with 1step gradient decent
+            true_label = []
+            predict_label = []
             for user in server.users:
-                # testloader = user.testloaderfull
-                for x,y in user.testloaderfull:
-                    true_label.extend(y.numpy())
-                    x, y = x.to(device), y.to(device)
-                    output = model(x)
-                    predict = (torch.argmax(output, dim=1) )
-                    predict_label.extend(predict.cpu().numpy())
-                    
-                    
-        plot_function(true_label, predict_label, "{}(PM2)1step".format(algorithm))
-        
-        # 4 more steps 
-        
-        # make prediction with personal model with 1step gradient decent
-        true_label = []
-        predict_label = []
-        for user in server.users:
-            if(algorithm == "pFedMe"):
-                user.train(4)
-            elif(algorithm == "PerAvg"):
-                user.train_one_step()
-                user.train_one_step()
-                user.train_one_step()
-                user.train_one_step()
+                if(algorithm == "pFedMe"):
+                    user.train(1)
+                elif(algorithm == "PerAvg"):
+                    user.train_one_step()
+                
+            true_label, predict_label = server.test_and_get_label()
+            plot_function(true_label, predict_label, "{}(PM1)1step".format(algorithm))
             
-        true_label, predict_label = server.test_and_get_label()
-        plot_function(true_label, predict_label, "{}(PM1)5step".format(algorithm))
-        
-        # make prediction to with personal model of user 0
-        true_label = []
-        predict_label = []
-        model = server.users[0].model
-        model.eval()
-        with torch.no_grad():
+            # make prediction to with personal model of user 0
+            true_label = []
+            predict_label = []
+            model = server.users[0].model
+            model.eval()
+            with torch.no_grad():
+                for user in server.users:
+                    # testloader = user.testloaderfull
+                    for x,y in user.testloaderfull:
+                        true_label.extend(y.numpy())
+                        x, y = x.to(device), y.to(device)
+                        output = model(x)
+                        predict = (torch.argmax(output, dim=1) )
+                        predict_label.extend(predict.cpu().numpy())
+                        
+                        
+            plot_function(true_label, predict_label, "{}(PM2)1step".format(algorithm))
+            
+            # 4 more steps 
+            
+            # make prediction with personal model with 1step gradient decent
+            true_label = []
+            predict_label = []
             for user in server.users:
-                # testloader = user.testloaderfull
-                for x,y in user.testloaderfull:
-                    true_label.extend(y.numpy())
-                    x, y = x.to(device), y.to(device)
-                    output = model(x)
-                    predict = (torch.argmax(output, dim=1) )
-                    predict_label.extend(predict.cpu().numpy())
-        
-        plot_function(true_label, predict_label, "{}(PM2)5step".format(algorithm))
-        
-        # make prediction with personal model with 5step gradient decent
-        true_label = []
-        predict_label = []
-        for user in server.users:
-            if(algorithm == "pFedMe"):
-                user.train(5)
-            elif(algorithm == "PerAvg"):
-                user.train_one_step()
-                user.train_one_step()
-                user.train_one_step()
-                user.train_one_step()
+                if(algorithm == "pFedMe"):
+                    user.train(4)
+                elif(algorithm == "PerAvg"):
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                
+            true_label, predict_label = server.test_and_get_label()
+            plot_function(true_label, predict_label, "{}(PM1)5step".format(algorithm))
             
-        true_label, predict_label = server.test_and_get_label()
-        plot_function(true_label, predict_label, "{}(PM1)10step".format(algorithm))
+            # make prediction to with personal model of user 0
+            true_label = []
+            predict_label = []
+            model = server.users[0].model
+            model.eval()
+            with torch.no_grad():
+                for user in server.users:
+                    # testloader = user.testloaderfull
+                    for x,y in user.testloaderfull:
+                        true_label.extend(y.numpy())
+                        x, y = x.to(device), y.to(device)
+                        output = model(x)
+                        predict = (torch.argmax(output, dim=1) )
+                        predict_label.extend(predict.cpu().numpy())
+            
+            plot_function(true_label, predict_label, "{}(PM2)5step".format(algorithm))
+            
+            # make prediction with personal model with 5step gradient decent
+            true_label = []
+            predict_label = []
+            for user in server.users:
+                if(algorithm == "pFedMe"):
+                    user.train(5)
+                elif(algorithm == "PerAvg"):
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                
+            true_label, predict_label = server.test_and_get_label()
+            plot_function(true_label, predict_label, "{}(PM1)10step".format(algorithm))
+
+    elif(path.endswith(".h5")):
+        plot_train_results(path, algorithm)
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -3,6 +3,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 import numpy
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
+import h5py
 
 def cifar_label_convert():
     pass
@@ -63,4 +64,38 @@ def computePRF(true_labels, predicted_labels,model_name):
 
     plt.axis([-1, len(label), 0, 1])
     plt.savefig(fname=("Cifar_per_plot/prf_"+model_name))
+    plt.show()
+
+def plot_train_results(h5_path, model_name):
+    with h5py.File(h5_path, 'r') as hf:
+        # Load the data from the h5 file using the keys
+        rs_glob_acc = hf['rs_glob_acc'][:]
+        rs_train_acc = hf['rs_train_acc'][:]
+        rs_train_loss = hf['rs_train_loss'][:]
+    
+    # Plot train loss
+    plt.figure(figsize=(10, 5))
+    plt.plot(rs_train_loss, label='Train Loss')
+    plt.xlabel('Iterations')
+    plt.ylabel('Loss')
+    plt.title('{} Train Loss'.format(model_name))
+    plt.legend()
+    plt.show()
+
+    # Plot train accuracy
+    plt.figure(figsize=(10, 5))
+    plt.plot(rs_train_acc, label='Train Accuracy')
+    plt.xlabel('Iterations')
+    plt.ylabel('Accuracy')
+    plt.title('{} Train Accuracy'.format(model_name))
+    plt.legend()
+    plt.show()
+
+    # Plot global accuracy
+    plt.figure(figsize=(10, 5))
+    plt.plot(rs_glob_acc, label='Global Accuracy')
+    plt.xlabel('Iterations')
+    plt.ylabel('Accuracy')
+    plt.title('{} Global Accuracy'.format(model_name))
+    plt.legend()
     plt.show()
