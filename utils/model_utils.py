@@ -399,7 +399,7 @@ def train_transforms():
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomVerticalFlip(p=0.5),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     return transform
     # transforms = A.Compose([
@@ -423,10 +423,8 @@ def train_transforms():
 # only resize, scale [-1, 1] and converting to tensor array[h,w,c] -> tensor[c,h,w]
 def valid_transforms():
     transform = transforms.Compose([
-            transforms.ColorJitter(brightness=(0.9, 1.1)),
-            transforms.ColorJitter(contrast=(0.8, 1.2)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     return transform
     # transforms = A.Compose([
