@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 from sklearn.metrics import precision_score, recall_score, f1_score
 import numpy
@@ -5,10 +8,6 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import os
 import h5py
-import matplotlib
-
-if os.environ.get('DISPLAY','') == '':
-    matplotlib.use('Agg')
 
 def plot_function(true_label, predict_label, graph_name):
         plot_cm(true_label,predict_label, graph_name)
