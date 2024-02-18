@@ -51,7 +51,6 @@ class pFedMe(Server):
             # print("Evaluate global model")
             # print("")
             self.evaluate()
-            self.save_best_model(glob_iter)
 
             # do update for all users not only selected users
             for user in self.users:
@@ -71,7 +70,7 @@ class pFedMe(Server):
             #print("Evaluate persionalized model")
             #print("")
             self.evaluate_personalized_model()
-            self.save_best_model(glob_iter, pFedMe=True)
+            self.save_best_model(glob_iter)
             #self.aggregate_parameters()
             self.persionalized_aggregate_parameters()
             # if(glob_iter % 100 == 99):

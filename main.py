@@ -10,9 +10,11 @@ from FLAlgorithms.servers.serveravg import FedAvg
 from FLAlgorithms.servers.serverpFedMe import pFedMe
 from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.trainmodel.models import *
+from utils.model_utils import read_test_byClient, read_user_data
 from utils.plot_utils import *
 import torch
 torch.manual_seed(0)
+random.seed(0)
 
 from dotenv import load_dotenv
 
@@ -82,6 +84,25 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         server.test()
                 
         # plot graph after training
+        if(dataset== "ISIC19_raw"):
+            # user the best model
+            for user in server.users:
+                user.model = user.best_model
+            
+            # load the real test set
+            data = read_test_byClient(dataset, "final_test")
+            total_users = len(data[0])
+            for i in range(total_users):
+                uid, train , test = read_user_data(i, data, dataset)
+                # find user by id
+                the_user = None
+                for user in server.users:
+                    if user.id == uid:
+                        the_user = user
+                        break
+                the_user.new_dataloader(train , test)
+                
+        
         server.plot_graph()
         
     # Average data 

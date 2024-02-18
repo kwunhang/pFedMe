@@ -117,6 +117,8 @@ class Server:
                 os.makedirs(model_path)
         for user in self.users:
             user.save_model(model_path)
+            user.best_model = copy.deepcopy(user.model)
+            
         # if global_iter:
         #     # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
         #     torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
@@ -415,7 +417,7 @@ class Server:
             if(key.endswith("running_var") or key.endswith("running_mean")):
                 global_model[key]= (torch.zeros_like(data))
     
-    def save_best_model(self, step = None, pFedMe= False):
+    def save_best_model(self, step = None):
         if (self.save_best== True):
             saveModel = copy.deepcopy(self.model).to(cpu)
             model_path = os.getenv('SAVE_MODEL_PATH')
@@ -427,9 +429,6 @@ class Server:
             model_path = os.path.join(model_path, "bestModel")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
-            if pFedMe == False:
-                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
-            else:
-                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_bestPersonModel_" + ".pt"))
+            torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
             self.save_all_client_model(model_path=model_path)
             self.save_best= False

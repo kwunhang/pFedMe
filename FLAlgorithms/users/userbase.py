@@ -35,6 +35,7 @@ class User:
         # those parameters are for persionalized federated learing.
         self.local_model = copy.deepcopy(list(self.model.parameters()))
         self.persionalized_model_bar = copy.deepcopy(list(self.model.parameters()))
+        self.best_model = None
     
     # fedBN, use original batch layer param
     # Refer to torch src code, parameter is sub-function of named_parameters, the order shd be the same
@@ -196,6 +197,12 @@ class User:
             output = self.model(X)
             # loss = self.loss(output, y)
             # loss.backward()
+    
+    def new_dataloader(self, train_data, test_data):
+        self.trainloader = DataLoader(train_data, self.batch_size, shuffle=True, num_workers=1)
+        self.testloader =  DataLoader(test_data, self.batch_size,num_workers=1)
+        self.testloaderfull = DataLoader(test_data, self.batch_size,num_workers=1)
+        self.trainloaderfull = DataLoader(train_data, self.batch_size,num_workers=1)
     
     @staticmethod
     def model_exists():

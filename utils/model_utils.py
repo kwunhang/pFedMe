@@ -204,51 +204,6 @@ def read_cifa_data():
         train_data["user_data"][uname] =  {'x': X[i][test_len:], 'y': y[i][test_len:]}
         train_data['users'].append(uname)
         train_data['num_samples'].append(train_len)
-        
-        
-    # random.seed(1)
-    # np.random.seed(1)
-    # NUM_USERS = 1 # should be muitiple of 10
-    # NUM_LABELS = 10
-    # # Setup directory for train/test data
-    # cifa_data_image = []
-    # cifa_data_label = []
-
-    # cifa_data_image.extend(trainset.data.cpu().detach().numpy())
-    # cifa_data_label.extend(trainset.targets.cpu().detach().numpy())
-
-    # cifa_data_image = np.array(cifa_data_image)
-    # cifa_data_label = np.array(cifa_data_label)
-
-    # # Create data structure
-    # train_data = {'users': [], 'user_data':{}, 'num_samples':[]}
-
-    # # Setup 5 users
-    # # for i in trange(5, ncols=120):
-    # for i in range(NUM_USERS):
-    #     uname = 'f_{0:05d}'.format(i)
-    #     train_data['users'].append(uname) 
-    #     train_data['user_data'][uname] = {'x': cifa_data_image.tolist(), 'y': cifa_data_label.tolist()}
-    #     train_data['num_samples'].append(len(cifa_data_image))
-
-    # #-----------------------------------TEst -------------------------------------#
-    # cifa_data_image_test = []
-    # cifa_data_label_test = []
-    # cifa_data_image_test.extend(testset.data.cpu().detach().numpy())
-    # cifa_data_label_test.extend(testset.targets.cpu().detach().numpy())
-    # cifa_data_image_test = np.array(cifa_data_image_test)
-    # cifa_data_label_test = np.array(cifa_data_label_test)
-
-    # cifa_data = []
-
-    # # Create data structure
-    # test_data = {'users': [], 'user_data':{}, 'num_samples':[]}
-    
-    # for i in range(NUM_USERS):
-    #     num_samples = len(cifa_data_image_test)
-    #     test_data['users'].append(uname) 
-    #     test_data['user_data'][uname] = {'x': cifa_data_image_test.tolist(), 'y': cifa_data_label_test.tolist()}
-    #     test_data['num_samples'].append(num_samples)
 
     return train_data['users'], _ , train_data['user_data'], test_data['user_data']
 
@@ -258,6 +213,36 @@ def read_data_byClient(dataset):
         data_path = 'data'
     train_data_dir = os.path.join(data_path,dataset,'data', 'train')
     test_data_dir = os.path.join(data_path,dataset,'data', 'test')
+    clients = []
+    train_data = {}
+    test_data = {}
+    
+    train_files = os.listdir(train_data_dir)
+    train_files = [f for f in train_files if f.endswith('.npz')]
+    for f in train_files:
+        file_path = os.path.join(train_data_dir, f)
+        with open(file_path, 'rb') as inf:
+            client_train_data = np.load(inf,allow_pickle=True)['data'].tolist()
+        user = str(f).split('.')[0]
+        clients.append(user)
+        train_data[user] = client_train_data
+
+    test_files = os.listdir(test_data_dir)
+    test_files = [f for f in test_files if f.endswith('.npz')]
+    for f in test_files:
+        file_path = os.path.join(test_data_dir, f)
+        with open(file_path, 'rb') as inf:
+            client_test_data = np.load(inf,allow_pickle=True)['data'].tolist()
+        test_data[str(f).split('.')[0]] = client_test_data
+    
+    return clients, train_data, test_data
+
+def read_test_byClient(dataset, folder_name):
+    data_path = os.getenv('DATA_PATH')
+    if data_path == None or data_path == "":
+        data_path = 'data'
+    train_data_dir = os.path.join(data_path,dataset,'data', 'train')
+    test_data_dir = os.path.join(data_path,dataset,'data', folder_name)
     clients = []
     train_data = {}
     test_data = {}
@@ -364,11 +349,6 @@ def read_user_data(index,data,dataset):
         y_train = torch.Tensor(y_train).type(torch.int64)
         X_test = torch.Tensor(X_test).view(-1, 3, 224, 224).type(torch.float32)
         y_test = torch.Tensor(y_test).type(torch.int64)
-    # elif(dataset== "ISIC19_raw"):
-    #     X_train = torch.Tensor(X_train).view(-1, 3, 224, 224).type(torch.float32)
-    #     y_train = torch.Tensor(y_train).type(torch.int64)
-    #     X_test = torch.Tensor(X_test).view(-1, 3, 224, 224).type(torch.float32)
-    #     y_test = torch.Tensor(y_test).type(torch.int64)
     else:
         X_train = torch.Tensor(X_train).type(torch.float32)
         y_train = torch.Tensor(y_train).type(torch.int64)
@@ -427,13 +407,6 @@ def valid_transforms():
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     return transform
-    # transforms = A.Compose([
-    #                   A.LongestMaxSize(max_size=224),
-    #                   A.PadIfNeeded(min_height=224, min_width=224),
-    #                   A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
-    #                   ToTensorV2(p=1.0),
-    #                   ], p=1.0)
-    return transforms
 
 class Metrics(object):
     def __init__(self, clients, params):
@@ -497,13 +470,6 @@ class ISIC19Dataset(Dataset):
             idx = idx.tolist()
         
         x, y = self.data[idx]
-
-        # img_name = os.path.join(self.root_dir,
-        #                         self.landmarks_frame.iloc[idx, 0])
-        # image = io.imread(img_name)
-        # landmarks = self.landmarks_frame.iloc[idx, 1:]
-        # landmarks = np.array([landmarks], dtype=float).reshape(-1, 2)
-        # sample = {'image': image, 'landmarks': landmarks}
 
         if self.transform:
             # x = np.transpose(x.numpy(), (1,2,0)) #ToTensorV2 change[h,w,c] -> [c,h,w], revert the change
