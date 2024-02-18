@@ -11,7 +11,7 @@ from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.trainmodel.models import *
 from utils.plot_utils import *
 import torch
-from analysis_utils import plot_cm, computePRF, plot_train_results
+from analysis_utils import plot_cm, computePRF, plot_train_results, plot_function
 
 from utils.model_utils import read_data, read_user_data
 
@@ -19,14 +19,6 @@ torch.manual_seed(0)
 
 
 cpu = torch.device('cpu')
-
-def plot_function(true_label, predict_label, graph_name):
-        plot_cm(true_label,predict_label, graph_name)
-        computePRF(true_label,predict_label, graph_name)
-        assert len(true_label)== len(predict_label)
-        accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
-        print("{} acc:".format(graph_name) ,accuracy)
-        return "{} acc:".format(graph_name) + accuracy
     
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file):

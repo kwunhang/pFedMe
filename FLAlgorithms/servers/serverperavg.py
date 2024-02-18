@@ -4,7 +4,7 @@ import os
 from FLAlgorithms.users.userperavg import UserPerAvg
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
-from analysis import plot_function
+from analysis_utils import plot_function
 
 
 # Implementation for per-FedAvg Server

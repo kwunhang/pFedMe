@@ -5,7 +5,7 @@ from FLAlgorithms.users.useravg import UserAVG
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
 import numpy as np
-from analysis import plot_function
+from analysis_utils import plot_function
 
 # Implementation for FedAvg Server
 

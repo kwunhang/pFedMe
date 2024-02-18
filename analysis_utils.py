@@ -6,6 +6,14 @@ import matplotlib.pyplot as plt
 import os
 import h5py
 
+def plot_function(true_label, predict_label, graph_name):
+        plot_cm(true_label,predict_label, graph_name)
+        computePRF(true_label,predict_label, graph_name)
+        assert len(true_label)== len(predict_label)
+        accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
+        print("{} acc:".format(graph_name) ,accuracy)
+        return "{} acc:".format(graph_name) + accuracy
+
 def cifar_label_convert():
     pass
 
