@@ -5,7 +5,9 @@ from FLAlgorithms.users.userpFedMe import UserpFedMe
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
 import numpy as np
- 
+
+from analysis import plot_function
+
 # Implementation for pFedMe Server
 
 class pFedMe(Server):
@@ -83,4 +85,24 @@ class pFedMe(Server):
         self.save_model()
         self.save_all_client_model()
     
+    def trainAllClient(self, step):
+        for user in self.users:
+            user.train(step)
   
+    def plot_graph(self):
+        graph_name = self.dataset + self.algorithm
+        self.send_parameters()
+        true_label, predict_label = self.test_and_get_label()
+        plot_function(true_label, predict_label, graph_name)
+        
+        self.trainAllClient(step=1)
+        true_label, predict_label = self.test_and_get_label()
+        plot_function(true_label, predict_label, "{}(PM)1step".format(graph_name))
+        
+        self.trainAllClient(step=4)
+        true_label, predict_label = self.test_and_get_label()
+        plot_function(true_label, predict_label, "{}(PM)5step".format(graph_name))
+        
+        self.trainAllClient(step=5)
+        true_label, predict_label = self.test_and_get_label()
+        plot_function(true_label, predict_label, "{}(PM)10step".format(graph_name))

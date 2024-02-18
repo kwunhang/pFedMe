@@ -3,6 +3,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 import numpy
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
+import os
 import h5py
 
 def cifar_label_convert():
@@ -12,6 +13,12 @@ def plot_cm(true_labels, predict_labels, model_name):
     result_cm = confusion_matrix(true_labels, predict_labels)
     num_classes = 10
     class_names = [i for i in range(10)]
+    
+    plot_path = os.getenv('SAVE_PLOT_PATH')
+    if plot_path == None or plot_path == "":
+        plot_path = "plot"
+    if not os.path.exists(plot_path):
+            os.makedirs(plot_path)
     fig, ax = plt.subplots()
     plt.imshow(result_cm, interpolation='nearest', cmap=plt.cm.Blues)
     ax.set_title(f"Confusion Matrix of {model_name}")
@@ -31,13 +38,19 @@ def plot_cm(true_labels, predict_labels, model_name):
     plt.tight_layout()
     plt.colorbar()
     plt.show()
-    plt.savefig(fname=("Cifar_per_plot/cm_"+model_name))
+    plt.savefig(fname=(plot_path +"/cm_"+model_name))
     return plt
 
 def computePRF(true_labels, predicted_labels,model_name):
     precision = precision_score(true_labels, predicted_labels, average=None)
     recall = recall_score(true_labels, predicted_labels, average=None)
     f1 = f1_score(true_labels, predicted_labels, average=None)
+    
+    plot_path = os.getenv('SAVE_PLOT_PATH')
+    if plot_path == None or plot_path == "":
+        plot_path = "plot"
+    if not os.path.exists(plot_path):
+            os.makedirs(plot_path)
 
     # print("")
     # for i, label in enumerate(labels_noniid5):
@@ -63,7 +76,7 @@ def computePRF(true_labels, predicted_labels,model_name):
     ax.legend()
 
     plt.axis([-1, len(label), 0, 1])
-    plt.savefig(fname=("Cifar_per_plot/prf_"+model_name))
+    plt.savefig(fname=(plot_path+"/prf_"+model_name))
     plt.show()
 
 def plot_train_results(h5_path, model_name):

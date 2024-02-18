@@ -80,7 +80,10 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         # print("user optimizer",server.users[0].optimizer)
         server.train(start_iter=itered)
         server.test()
-
+                
+        # plot graph after training
+        server.plot_graph()
+        
     # Average data 
     if(algorithm == "PerAvg"):
         algorithm == "PerAvg_p"

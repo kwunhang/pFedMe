@@ -20,6 +20,12 @@ torch.manual_seed(0)
 
 cpu = torch.device('cpu')
 
+def plot_function(true_label, predict_label, graph_name):
+        plot_cm(true_label,predict_label, graph_name)
+        computePRF(true_label,predict_label, graph_name)
+        assert len(true_label)== len(predict_label)
+        accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
+        print("{} acc:".format(graph_name) ,accuracy)
     
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file):
@@ -77,13 +83,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "PerAvg"):
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
 
-
-    def plot_function(true_label, predict_label, graph_name):
-        plot_cm(true_label,predict_label, graph_name)
-        computePRF(true_label,predict_label, graph_name)
-        assert len(true_label)== len(predict_label)
-        accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
-        print("{} acc:".format(graph_name) ,accuracy)
+    
 
 
     # global model 
@@ -111,7 +111,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         server.model = server.model.to(device)
         server.send_parameters()
         server.update_server_BN()
-        server.update_user_BN()
+        # server.update_user_BN() expect the user BN is saved
         server.aggregate_parameters()
         
         true_label, predict_label = server.test_and_get_label()
@@ -134,21 +134,20 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
             
             # make prediction to with personal model of user 0
-            true_label = []
-            predict_label = []
-            model = server.users[0].model
-            model.eval()
-            with torch.no_grad():
-                for user in server.users:
-                    # testloader = user.testloaderfull
-                    for x,y in user.testloaderfull:
-                        true_label.extend(y.numpy())
-                        x, y = x.to(device), y.to(device)
-                        output = model(x)
-                        predict = (torch.argmax(output, dim=1) )
-                        predict_label.extend(predict.cpu().numpy())
-                        
-            plot_function(true_label, predict_label, "{}(PM2)1step".format(graph_name))
+            # true_label = []
+            # predict_label = []
+            # model = server.users[0].model
+            # model.eval()
+            # with torch.no_grad():
+            #     for user in server.users:
+            #         # testloader = user.testloaderfull
+            #         for x,y in user.testloaderfull:
+            #             true_label.extend(y.numpy())
+            #             x, y = x.to(device), y.to(device)
+            #             output = model(x)
+            #             predict = (torch.argmax(output, dim=1) )
+            #             predict_label.extend(predict.cpu().numpy())       
+            # plot_function(true_label, predict_label, "{}(PM2)1step".format(graph_name))
             
             # 4 more steps 
             
@@ -169,21 +168,20 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
             plot_function(true_label, predict_label, "{}(PM1)5step".format(graph_name))
             
             # make prediction to with personal model of user 0
-            true_label = []
-            predict_label = []
-            model = server.users[0].model
-            model.eval()
-            with torch.no_grad():
-                for user in server.users:
-                    # testloader = user.testloaderfull
-                    for x,y in user.testloaderfull:
-                        true_label.extend(y.numpy())
-                        x, y = x.to(device), y.to(device)
-                        output = model(x)
-                        predict = (torch.argmax(output, dim=1) )
-                        predict_label.extend(predict.cpu().numpy())
-            
-            plot_function(true_label, predict_label, "{}(PM2)5step".format(graph_name))
+            # true_label = []
+            # predict_label = []
+            # model = server.users[0].model
+            # model.eval()
+            # with torch.no_grad():
+            #     for user in server.users:
+            #         # testloader = user.testloaderfull
+            #         for x,y in user.testloaderfull:
+            #             true_label.extend(y.numpy())
+            #             x, y = x.to(device), y.to(device)
+            #             output = model(x)
+            #             predict = (torch.argmax(output, dim=1) )
+            #             predict_label.extend(predict.cpu().numpy())
+            # plot_function(true_label, predict_label, "{}(PM2)5step".format(graph_name))
             
             # make prediction with personal model with 5step gradient decent
             true_label = []
@@ -192,6 +190,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                 if(algorithm == "pFedMe"):
                     user.train(5)
                 elif(algorithm == "PerAvg"):
+                    user.train_one_step()
                     user.train_one_step()
                     user.train_one_step()
                     user.train_one_step()
