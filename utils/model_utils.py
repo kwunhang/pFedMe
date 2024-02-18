@@ -336,6 +336,12 @@ def read_data(dataset):
 
     return clients, groups, train_data, test_data
 
+def tensor_to_PIL(tensor):
+    image = tensor.cpu().clone()
+    image = image.squeeze(0)
+    image = transforms.ToPILImage(image)
+    return image
+
 def read_user_data(index,data,dataset):
     id = data[0][index]
     train_data = data[2][id]
@@ -369,15 +375,20 @@ def read_user_data(index,data,dataset):
         X_test = torch.Tensor(X_test).type(torch.float32)
         y_test = torch.Tensor(y_test).type(torch.int64)
     
-    train_data = [(x, y) for x, y in zip(X_train, y_train)]
-    test_data = [(x, y) for x, y in zip(X_test, y_test)]
+    # train_data = [(x, y) for x, y in zip(X_train, y_train)]
+    # test_data = [(x, y) for x, y in zip(X_test, y_test)]
     
     if(dataset == "ISIC19_raw"):
         print("load dataset for ISIC19_raw case")
+        train_data = [(transforms.ToPILImage(x), y) for x, y in zip(X_train, y_train)]
+        test_data = [(transforms.ToPILImage(x), y) for x, y in zip(X_test, y_test)]
         train_data = ISIC19Dataset(train_data, transform=train_transforms())
         test_data = ISIC19Dataset(test_data, transform=valid_transforms())
         print("print sample")
         print(train_data.get_sample)
+    else:
+        train_data = [(x, y) for x, y in zip(X_train, y_train)]
+        test_data = [(x, y) for x, y in zip(X_test, y_test)]
     
     return id, train_data, test_data
 
@@ -497,7 +508,7 @@ class ISIC19Dataset(Dataset):
         # sample = {'image': image, 'landmarks': landmarks}
 
         if self.transform:
-            x = np.transpose(x.numpy(), (1,2,0)) #ToTensorV2 change[h,w,c] -> [c,h,w], revert the change
+            # x = np.transpose(x.numpy(), (1,2,0)) #ToTensorV2 change[h,w,c] -> [c,h,w], revert the change
             x = self.transform(x)
             # image = {"image": x}
             # image = self.transform(**image)["image"]
