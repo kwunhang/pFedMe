@@ -265,7 +265,7 @@ def read_test_byClient(dataset, folder_name):
             client_test_data = np.load(inf,allow_pickle=True)['data'].tolist()
         test_data[str(f).split('.')[0]] = client_test_data
     
-    return clients, train_data, test_data
+    return clients,[] ,train_data, test_data
 
 def read_data(dataset):
     '''parses data in given train and test data directories
