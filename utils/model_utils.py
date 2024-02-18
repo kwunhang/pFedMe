@@ -9,9 +9,11 @@ from tqdm import trange
 import numpy as np
 import random
 from torch.utils.data import Dataset, DataLoader
+from torchvision.transforms import v2
 
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
+
+# import albumentations as A
+# from albumentations.pytorch.transforms import ToTensorV2
 
 
 import os
@@ -381,32 +383,41 @@ def read_user_data(index,data,dataset):
     return id, train_data, test_data
 
 def train_transforms():
-    transforms = A.Compose([
-        A.RandomBrightnessContrast(
-            brightness_limit=0.1, 
-            contrast_limit=0.2, brightness_by_max=True, always_apply=False, p=0.5),
-        A.OneOf(
-                              [A.HorizontalFlip(p=0.5),
-                               A.VerticalFlip(p=0.5),
-                               A.RandomRotate90(p=0.5),
-                               A.Transpose(p=0.5),
-                              ], p=0.5),
-        A.LongestMaxSize(max_size=224),
-        A.PadIfNeeded(min_height=224, min_width=224),
+    transforms = v2.Compose([
+            transforms.ColorJitter(brightness=(0.9, 1.1)),
+            transforms.ColorJitter(contrast=(0.8, 1.2)),
+            v2.RandomHorizontalFlip(p=0.5),
+            v2.RandomVerticalFlip(p=0.5),
+            v2.ToDtype(torch.float32, scale=True),
+            v2.ToTensor(),
+            v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+    # transforms = A.Compose([
+    #     A.RandomBrightnessContrast(
+    #         brightness_limit=0.1, 
+    #         contrast_limit=0.2, brightness_by_max=True, always_apply=False, p=0.5),
+    #     A.OneOf(
+    #                           [A.HorizontalFlip(p=0.5),
+    #                            A.VerticalFlip(p=0.5),
+    #                            A.RandomRotate90(p=0.5),
+    #                            A.Transpose(p=0.5),
+    #                           ], p=0.5),
+    #     A.LongestMaxSize(max_size=224),
+    #     A.PadIfNeeded(min_height=224, min_width=224),
         
-        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
-        ToTensorV2(p=1.0),
-    ], p=1.0)
+    #     A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
+    #     ToTensorV2(p=1.0),
+    # ], p=1.0)
     return transforms
 
 # only resize, scale [-1, 1] and converting to tensor array[h,w,c] -> tensor[c,h,w]
 def valid_transforms():
-    transforms = A.Compose([
-                      A.LongestMaxSize(max_size=224),
-                      A.PadIfNeeded(min_height=224, min_width=224),
-                      A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
-                      ToTensorV2(p=1.0),
-                      ], p=1.0)
+    # transforms = A.Compose([
+    #                   A.LongestMaxSize(max_size=224),
+    #                   A.PadIfNeeded(min_height=224, min_width=224),
+    #                   A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
+    #                   ToTensorV2(p=1.0),
+    #                   ], p=1.0)
     return transforms
 
 class Metrics(object):
@@ -481,9 +492,10 @@ class ISIC19Dataset(Dataset):
 
         if self.transform:
             x = np.transpose(x.numpy(), (1,2,0)) #ToTensorV2 change[h,w,c] -> [c,h,w], revert the change
-            image = {"image": x}
-            image = self.transform(**image)["image"]
-            x=image
+            x = self.transform(x)
+            # image = {"image": x}
+            # image = self.transform(**image)["image"]
+            # x=image
                 
 
         return x,y
