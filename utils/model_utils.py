@@ -380,8 +380,8 @@ def read_user_data(index,data,dataset):
     
     if(dataset == "ISIC19_raw"):
         print("load dataset for ISIC19_raw case")
-        train_data = [(transforms.ToPILImage(x), y) for x, y in zip(X_train, y_train)]
-        test_data = [(transforms.ToPILImage(x), y) for x, y in zip(X_test, y_test)]
+        train_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_train, y_train)]
+        test_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_test, y_test)]
         train_data = ISIC19Dataset(train_data, transform=train_transforms())
         test_data = ISIC19Dataset(test_data, transform=valid_transforms())
         print("print sample")
