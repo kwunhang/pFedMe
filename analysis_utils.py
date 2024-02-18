@@ -15,7 +15,7 @@ def plot_function(true_label, predict_label, graph_name):
         assert len(true_label)== len(predict_label)
         accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
         print("{} acc:".format(graph_name) ,accuracy)
-        return "{} acc:".format(graph_name) + accuracy
+        return "{} acc:".format(graph_name) + str(accuracy)
 
 def cifar_label_convert():
     pass
