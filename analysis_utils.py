@@ -5,6 +5,10 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import os
 import h5py
+import matplotlib
+
+if os.environ.get('DISPLAY','') == '':
+    matplotlib.use('Agg')
 
 def plot_function(true_label, predict_label, graph_name):
         plot_cm(true_label,predict_label, graph_name)
@@ -26,7 +30,7 @@ def plot_cm(true_labels, predict_labels, model_name):
     if plot_path == None or plot_path == "":
         plot_path = "plot"
     if not os.path.exists(plot_path):
-            os.makedirs(plot_path)
+        os.makedirs(plot_path)
     fig, ax = plt.subplots()
     plt.imshow(result_cm, interpolation='nearest', cmap=plt.cm.Blues)
     ax.set_title(f"Confusion Matrix of {model_name}")
@@ -39,8 +43,8 @@ def plot_cm(true_labels, predict_labels, model_name):
     for i in range(result_cm.shape[0]):
         for j in range(result_cm.shape[1]):
             plt.text(j, i, format(result_cm[i, j]),
-                    ha="center", va="center", size="small",
-                    color="white" if  result_cm[i, j] > thresh else "black")
+                ha="center", va="center", size="small",
+                color="white" if  result_cm[i, j] > thresh else "black")
     plt.ylabel('True label')
     plt.xlabel("Predicted label")
     plt.tight_layout()
