@@ -19,7 +19,7 @@ class FedSelf(Server):
         # Initialize data for all  users
         data = read_data(dataset)
         total_users = len(data[0])
-        self.num_users = len(num_users)
+        self.num_users = total_users
         for i in range(total_users):
             id, train , test = read_user_data(i, data, dataset)
             user = UserSelf(device, id, train, test, model, batch_size, learning_rate,beta,lamda, local_iters, optimizer)
