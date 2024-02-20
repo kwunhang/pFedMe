@@ -9,6 +9,7 @@ import os
 from FLAlgorithms.servers.serveravg import FedAvg
 from FLAlgorithms.servers.serverpFedMe import pFedMe
 from FLAlgorithms.servers.serverperavg import PerAvg
+from FLAlgorithms.servers.serverself import FedSelf
 from FLAlgorithms.trainmodel.models import *
 from utils.model_utils import read_test_byClient, read_user_data
 from utils.plot_utils import *
@@ -67,6 +68,10 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
 
         if(algorithm == "PerAvg"):
             server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i)
+        
+        if(algorithm == "FedSelf"):
+            server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i)
+     
 
         if (restore == 1 and i==0):
             model_path = "restore"
