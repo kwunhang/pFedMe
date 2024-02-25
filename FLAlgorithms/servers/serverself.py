@@ -29,17 +29,6 @@ class FedSelf(Server):
         print("Number of users / total users:",num_users, " / " ,total_users)
         print("Finished creating FedAvg server.")
 
-    # def send_grads(self):
-    #     assert (self.users is not None and len(self.users) > 0)
-    #     grads = []
-    #     for param in self.model.parameters():
-    #         if param.grad is None:
-    #             grads.append(torch.zeros_like(param.data))
-    #         else:
-    #             grads.append(param.grad)
-    #     for user in self.users:
-    #         user.set_grads(grads)
-
     def train(self, start_iter=0):
         loss = []
         for glob_iter in range(start_iter, self.num_glob_iters):
@@ -57,7 +46,7 @@ class FedSelf(Server):
                 user.train(self.local_iters) #* user.train_samples
 
 
-        self.send_parameters()
+        # self.send_parameters()
         # Evaluate model each interation
         self.evaluate()
         #print(loss)
@@ -68,7 +57,7 @@ class FedSelf(Server):
     def plot_graph(self):
         acc_log = []
         graph_name = self.dataset + self.algorithm
-        self.send_parameters()
+        # self.send_parameters()
         true_label, predict_label = self.test_and_get_label()
         log = plot_function(true_label, predict_label, graph_name)
         acc_log.append(log)
