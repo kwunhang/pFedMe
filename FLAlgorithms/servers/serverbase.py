@@ -92,7 +92,7 @@ class Server:
         model_path = os.getenv('SAVE_MODEL_PATH')
         if model_path == None or model_path == "":
             model_path = "models"
-        model_path = os.path.join(model_path, self.dataset)
+            model_path = os.path.join(model_path, self.dataset)
         if global_iter:
             model_path = os.path.join(model_path, "iter_" + global_iter)
         if not os.path.exists(model_path):
@@ -110,7 +110,7 @@ class Server:
             model_path = os.getenv('SAVE_MODEL_PATH')
             if model_path == None or model_path == "":
                 model_path = "models"
-            model_path = os.path.join(model_path, self.dataset)
+                model_path = os.path.join(model_path, self.dataset)
             if global_iter:
                 model_path = os.path.join(model_path, "iter_" + global_iter)
             if not os.path.exists(model_path):
@@ -423,7 +423,7 @@ class Server:
             model_path = os.getenv('SAVE_MODEL_PATH')
             if model_path == None or model_path == "":
                 model_path = "models"
-            model_path = os.path.join(model_path, self.dataset)
+                model_path = os.path.join(model_path, self.dataset)
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
             model_path = os.path.join(model_path, "bestModel")

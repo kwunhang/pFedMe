@@ -28,6 +28,17 @@ NUM_CHANNELS = 1
 IMAGE_SIZE_CIFAR = 32
 NUM_CHANNELS_CIFAR = 3
 
+class AddGaussianNoise(object):
+    def __init__(self, mean=0., std=1.):
+        self.std = std
+        self.mean = mean
+        
+    def __call__(self, tensor):
+        return tensor + torch.randn(tensor.size()) * self.std + self.mean
+    
+    def __repr__(self):
+        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
 def suffer_data(data):
     data_x = data['x']
     data_y = data['y']
@@ -374,10 +385,16 @@ def read_user_data(index,data,dataset):
 
 def train_transforms():
     transform = transforms.Compose([
-            transforms.ColorJitter(brightness=(0.9, 1.1)),
-            transforms.ColorJitter(contrast=(0.8, 1.2)),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomVerticalFlip(p=0.5),
+            transforms.RandomApply(torch.nn.ModuleList([transforms.RandomRotation(degrees=(-30, 30))]), p=0.2),
+            transforms.RandomApply(torch.nn.ModuleList([AddGaussianNoise(0., 1.)]), p=0.1),
+            transforms.RandomApply(torch.nn.ModuleList([
+                transforms.ColorJitter(brightness=(0.9, 1.1)),
+                transforms.ColorJitter(contrast=(0.8, 1.2)),
+                ]), p = 0.05),
+            transforms.RandomApply(torch.nn.ModuleList([transforms.RandomAffine(degrees=0,translate=(0,0),shear=45)]), p=0.2),
+            transforms.RandomPerspective(distortion_scale=0.5, p=0.05),
+            transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(hue=(0.3))]), p=0.3),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
