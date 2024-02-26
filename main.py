@@ -17,6 +17,7 @@ from FLAlgorithms.trainmodel.models import *
 from utils.model_utils import read_test_byClient, read_user_data
 from utils.plot_utils import *
 import torch
+import torchvision
 torch.manual_seed(0)
 random.seed(0)
 
@@ -62,7 +63,9 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             if(dataset.startswith("ISIC19")):
                 model = ResNet18_isic19(8).to(device), model
         if(model == "resnet50"):
-            model = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
+            # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
+            # model = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
+            torchvision.models.resnet50(weights='IMAGENET1K_V1')
 
         # select algorithm
         if(algorithm == "FedAvg"):
