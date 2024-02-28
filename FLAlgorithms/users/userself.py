@@ -50,7 +50,7 @@ class UserSelf(User):
         self.model.eval()
         predict_label = []
         true_label = [] 
-        # test_acc = 0
+        test_acc = 0
         with torch.no_grad():
             for x, y in self.testloaderfull:
                 true_label.extend(y.numpy())
@@ -58,9 +58,9 @@ class UserSelf(User):
                 output = self.model(x)
                 predict = (torch.argmax(output, dim=1) )
                 predict_label.extend(predict.cpu().numpy())
-                # test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
                 #@loss += self.loss(output, y)
-        acc = np.sum(true_label)*1.0/np.sum(predict_label)
+        acc = np.sum(test_acc)*1.0/np.sum(predict_label)
         print(self.id + ", Test Accuracy:", acc )
         # print(self.id + ", Test Loss:", loss)
         return true_label, predict_label
