@@ -94,7 +94,7 @@ class User:
         self.model.eval()
         predict_label = []
         true_label = [] 
-        # test_acc = 0
+        test_acc = 0
         with torch.no_grad():
             for x, y in self.testloaderfull:
                 true_label.extend(y.numpy())
@@ -102,10 +102,13 @@ class User:
                 output = self.model(x)
                 predict = (torch.argmax(output, dim=1) )
                 predict_label.extend(predict.cpu().numpy())
-                # test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
+                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
                 #@loss += self.loss(output, y)
                 # print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
                 #print(self.id + ", Test Loss:", loss)
+                
+        # print accuracy of each client
+        print(self.id + ", Test Accuracy:", test_acc )
         return true_label, predict_label
 
     def train_error_and_loss(self):
