@@ -289,9 +289,6 @@ class Server:
             true_label.extend(tl)
             predict_label.extend(pl)
         
-        # print accuracy of each client
-        accuracy = ((np.array(true_label) == np.array(predict_label)).sum())/len(true_label)
-        print(self.id + ", Test Accuracy:", accuracy )
             
         return true_label, predict_label
 
