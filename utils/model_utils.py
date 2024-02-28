@@ -387,13 +387,13 @@ def train_transforms():
     transform = transforms.Compose([
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomApply(torch.nn.ModuleList([transforms.RandomRotation(degrees=(-30, 30))]), p=0.2),
-            transforms.RandomApply(torch.nn.ModuleList([AddGaussianNoise(0., 1.)]), p=0.1),
+            # transforms.RandomApply(torch.nn.ModuleList([AddGaussianNoise(0., 1.)]), p=0.1),
             transforms.RandomApply(torch.nn.ModuleList([
                 transforms.ColorJitter(brightness=(0.9, 1.1)),
                 transforms.ColorJitter(contrast=(0.8, 1.2)),
                 ]), p = 0.05),
             transforms.RandomApply(torch.nn.ModuleList([transforms.RandomAffine(degrees=0,translate=(0,0),shear=45)]), p=0.2),
-            transforms.RandomPerspective(distortion_scale=0.5, p=0.05),
+            # transforms.RandomPerspective(distortion_scale=0.5, p=0.05),
             transforms.RandomApply(torch.nn.ModuleList([transforms.ColorJitter(hue=(0.3))]), p=0.3),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
