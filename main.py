@@ -66,7 +66,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
             resnet50 = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
             num_ftrs = resnet50.fc.in_features
-            resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8))
+            resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
             model = resnet50.to(device), model
             # model = torchvision.models.resnet50(weights='IMAGENET1K_V1').to(device), model
 
