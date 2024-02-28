@@ -33,10 +33,12 @@ class UserpFedMe(User):
             for idx, model_grad in enumerate(self.model.parameters()):
                 model_grad.data = new_grads[idx]
 
-    def train(self, epochs):
+    def train(self, epochs = None):
+        if epochs == None:
+            epochs = self.local_iters
         LOSS = 0
         self.model.train()
-        for iter in range(1, self.local_iters + 1):  # local update
+        for iter in range(1, epochs + 1):  # local update
             self.model.train()
             X, y = self.get_next_train_batch()
 
