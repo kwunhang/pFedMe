@@ -8,14 +8,17 @@ import os
 from FLAlgorithms.servers.serveravg import FedAvg
 from FLAlgorithms.servers.serverpFedMe import pFedMe
 from FLAlgorithms.servers.serverperavg import PerAvg
+from FLAlgorithms.servers.serverself import FedSelf
 from FLAlgorithms.trainmodel.models import *
 from utils.plot_utils import *
 import torch
 from analysis_utils import plot_cm, computePRF, plot_train_results, plot_function
 
-from utils.model_utils import read_data, read_user_data
-
 torch.manual_seed(0)
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 cpu = torch.device('cpu')
@@ -50,11 +53,14 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(model == "cnn_nBN"):
         if(dataset.startswith("Cifar10")):
             model = CifarNetNoBN().to(device), model
+    
+    if(model == "resnet50"):
+        # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
+        resnet50 = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
+        num_ftrs = resnet50.fc.in_features
+        resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
+        model = resnet50.to(device), model
 
-    
-
-    
-    
     
     # path = "models/Cifar10_dist_caifarnet/FedAvg_server.pt"
     # model = model[0].to(cpu)
@@ -76,8 +82,11 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "PerAvg"):
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
 
-    
+    if(algorithm == "FedSelf"):
+        server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i)
 
+    
+    
 
     # global model 
     assert (os.path.exists(path))
@@ -198,8 +207,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19"])
-    parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn"])
+    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw"])
+    parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn", "cnn_nBN", "resnet50"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
@@ -207,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg"]) 
+    parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
