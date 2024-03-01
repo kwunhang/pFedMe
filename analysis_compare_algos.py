@@ -90,11 +90,11 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     elif("fed" in analysis_file):
         graph_name = graph_name+"_"+"fed"
 
-    
     server.model.load_state_dict(torch.load(path))
     # server.model = torch.load(path)
     server.model = server.model.to(device)
-    
+
+
     if(pm_steps == "pm1"):
         true_label, predict_label = get_pm1_modal_labels(algorithm, server)
     elif(pm_steps == "pm5"):

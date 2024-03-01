@@ -173,7 +173,7 @@ def plot_train_results(h5_path, model_name):
     
     return plt
 
-def compare_model_PRF_function(true_label_list, predict_label_list, model_names, graph_name):
+def compare_model_PRF_function(true_label_list, predict_label_list, graph_name, model_names):
     assert len(true_label_list) == len(predict_label_list) == len(model_names), "Lists must have the same length."
 
     # Initialize dictionaries to hold precision, recall, and f1 scores for each model
