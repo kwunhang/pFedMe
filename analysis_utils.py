@@ -52,7 +52,7 @@ def plot_cm(true_labels, predict_labels, model_name):
     plt.savefig(fname=(plot_path +"/cm_"+model_name))
     return plt
 
-def computePRF(true_labels, predicted_labels,model_name):
+def computePRF(true_labels, predicted_labels, model_name):
     precision = precision_score(true_labels, predicted_labels, average=None)
     recall = recall_score(true_labels, predicted_labels, average=None)
     f1 = f1_score(true_labels, predicted_labels, average=None)
@@ -62,14 +62,6 @@ def computePRF(true_labels, predicted_labels,model_name):
         plot_path = "plot"
     if not os.path.exists(plot_path):
             os.makedirs(plot_path)
-
-    # print("")
-    # for i, label in enumerate(labels_noniid5):
-    #     print(f"Metrics for class {label}:")
-    #     print(f"Precision: {precision[i]}")
-    #     print(f"Recall: {recall[i]}")
-    #     print(f"F1 Score: {f1[i]}")
-    #     print()
     
     label = np.unique(true_labels)
     num_x = np.arange(len(label))
@@ -88,6 +80,58 @@ def computePRF(true_labels, predicted_labels,model_name):
 
     plt.axis([-1, len(label), 0, 1])
     plt.savefig(fname=(plot_path+"/prf_"+model_name))
+    plt.show()
+
+def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, pm_steps):
+    
+    if(pm_steps == ""):
+        pm_steps = "Global Model"
+    # Define a dictionary to hold the precision, recall, and f1 score for each algorithm
+    performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in algorithms}
+
+    # Compute PRF for each algorithm
+    for model_name, true_labels, predicted_labels in zip(algorithms, true_labels_list, predicted_labels_list):
+        precision = precision_score(true_labels, predicted_labels, average=None)
+        recall = recall_score(true_labels, predicted_labels, average=None)
+        f1 = f1_score(true_labels, predicted_labels, average=None)
+
+        performance_metrics[model_name]['precision'] = precision
+        performance_metrics[model_name]['recall'] = recall
+        performance_metrics[model_name]['f1'] = f1
+        computePRF(true_labels, predicted_labels, model_name)  # Call the computePRF function for each algorithm
+
+    # Plotting the comparison
+    plot_path = os.getenv('SAVE_PLOT_PATH', 'plot')
+    os.makedirs(plot_path, exist_ok=True)
+
+    labels = np.unique(np.concatenate(true_labels_list))  # assuming all algorithms have the same label set
+    num_x = np.arange(len(labels))
+
+    width = 0.2  # Width of the bars
+    num_algorithms = len(algorithms)
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    for i, model_name in enumerate(algorithms):
+        offset = (i - num_algorithms / 2) * width + width / 2
+
+        # Retrieve the precision, recall, and f1 scores for the current algorithm
+        precision = performance_metrics[model_name]['precision']
+        recall = performance_metrics[model_name]['recall']
+        f1 = performance_metrics[model_name]['f1']
+
+        # Plot the bars for precision, recall, and f1 scores
+        rects1 = ax.bar(num_x + offset, precision, width, label='Precision - ' + model_name)
+        rects2 = ax.bar(num_x + offset + width, recall, width, label='Recall - ' + model_name)
+        rects3 = ax.bar(num_x + offset + 2 * width, f1, width, label='F1 Score - ' + model_name)
+
+    ax.set_ylabel('Scores')
+    ax.set_title('Precision, Recall, and F1 Score Comparison')
+    ax.set_xticks(num_x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+
+    plt.axis([-1, len(labels), 0, 1.5])
+    plt.savefig(fname=os.path.join(plot_path, "prf_comparison_{}".format(pm_steps)))
     plt.show()
 
 def plot_train_results(h5_path, model_name):
