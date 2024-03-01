@@ -60,6 +60,7 @@ class pFedMeOptimizer(Optimizer):
             loss = closure
         weight_update = local_weight_updated.copy()
         for group in self.param_groups:
+            print("group",group)
             if p.grad is None:
                     continue
             for p, localweight in zip( group['params'], weight_update):
