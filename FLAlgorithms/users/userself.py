@@ -60,7 +60,7 @@ class UserSelf(User):
                 predict_label.extend(predict.cpu().numpy())
                 test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
                 #@loss += self.loss(output, y)
-        acc = np.sum(test_acc)*1.0/np.sum(predict_label)
+        acc = test_acc*1.0/self.test_samples
         print(self.id + ", Test Accuracy:", acc )
         # print(self.id + ", Test Loss:", loss)
         return true_label, predict_label
