@@ -172,3 +172,51 @@ def plot_train_results(h5_path, model_name):
     plt.savefig(fname=("Cifar_per_plot/global_acc_"+model_name))
     
     return plt
+
+def compare_model_PRF_function(true_label_list, predict_label_list, model_names, graph_name):
+    assert len(true_label_list) == len(predict_label_list) == len(model_names), "Lists must have the same length."
+
+    # Initialize dictionaries to hold precision, recall, and f1 scores for each model
+    precision_dict = {}
+    recall_dict = {}
+    f1_dict = {}
+
+    # Calculate metrics for each model
+    for i, model_name in enumerate(model_names):
+        precision_dict[model_name] = precision_score(true_label_list[i], predict_label_list[i], average='weighted')
+        recall_dict[model_name] = recall_score(true_label_list[i], predict_label_list[i], average='weighted')
+        f1_dict[model_name] = f1_score(true_label_list[i], predict_label_list[i], average='weighted')
+
+    # Plotting
+    plot_path = os.getenv('SAVE_PLOT_PATH', "plot")
+    if not os.path.exists(plot_path):
+        os.makedirs(plot_path)
+
+    # The number of models to compare
+    num_models = len(model_names)
+
+    width = 0.2  # Width of the bars
+    fig, ax = plt.subplots(figsize=(12, 8))
+
+    # Calculate the offset for bar's x-coordinate for each model
+    offsets = np.linspace(-width, width, num_models)
+    bar_width = width / num_models  # Adjust the bar width based on the number of models
+
+    # Iterate over each model and plot the precision, recall, and F1 score
+    for i, model_name in enumerate(model_names):
+        bar_positions = np.arange(len(precision_dict[model_name])) + offsets[i]
+        # Plot each metric
+        ax.bar(bar_positions, precision_dict[model_name], bar_width, label=f'Precision of {model_name}')
+        ax.bar(bar_positions, recall_dict[model_name], bar_width, bottom=precision_dict[model_name], label=f'Recall of {model_name}')
+        ax.bar(bar_positions, f1_dict[model_name], bar_width, bottom=[u+v for u, v in zip(precision_dict[model_name], recall_dict[model_name])], label=f'F1 Score of {model_name}')
+
+    ax.set_ylabel('Scores')
+    ax.set_title(f"Comparison of Precision, Recall, F1 Score for {graph_name}")
+    ax.set_xticks(np.arange(num_models))
+    ax.set_xticklabels(model_names)
+    ax.legend()
+
+    plt.axis([-width, num_models - 1 + width, 0, 1])
+    plt.grid(True)
+    plt.savefig(fname=os.path.join(plot_path, f"prf_comparison_{graph_name}.png"))
+    plt.show()

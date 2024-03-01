@@ -10,9 +10,9 @@ from FLAlgorithms.servers.serverpFedMe import pFedMe
 from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.servers.serverself import FedSelf
 from FLAlgorithms.trainmodel.models import *
-from utils.plot_utils import *
+from utils.plot_utils import * 
 import torch
-from analysis_utils import compare_different_PRF
+from analysis_utils import compare_model_PRF_function
 
 import argparse
 torch.manual_seed(0)
@@ -25,7 +25,7 @@ load_dotenv()
 cpu = torch.device('cpu')
     
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file, pm_steps):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files):
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
     print("device:", device)
     if(model == "mclr"):
@@ -61,9 +61,6 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         num_ftrs = resnet50.fc.in_features
         resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
         model = resnet50.to(device), model
-
-    path = "models/{}/{}".format(dataset, analysis_file)
-    print("path:", path)
     
     if(algorithm == "FedAvg"):
         server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
@@ -76,88 +73,108 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
     if(algorithm == "FedSelf"):
         server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
-
-    # global model 
-    assert (os.path.exists(path))
-    
-    # graph name implementation
-    graph_name = algorithm
-    if "res" in analysis_file:    
-        graph_name = graph_name+"_"+"ResNet"
         
-    if("silo" in analysis_file):
-        graph_name = graph_name+"_"+"silo"
-    elif("fed" in analysis_file):
-        graph_name = graph_name+"_"+"fed"
+        
+        
+    paths = []
+    for analysis_file in analysis_files:
+        path = "models/{}/{}".format(dataset, analysis_file)
+        print("path:", path)
+        assert (os.path.exists(path))
+        paths.append(path)
+        
+    # # graph name implementation
+    # graph_name = algorithm
+    # if "res" in analysis_file:    
+    #     graph_name = graph_name+"_"+"ResNet"
+        
+    # if("silo" in analysis_file):
+    #     graph_name = graph_name+"_"+"silo"
+    # elif("fed" in analysis_file):
+    #     graph_name = graph_name+"_"+"fed"
 
+    servers = []
+
+    true_label_list = []
+    predict_label_list = []
+    for path in paths:
+        server.model.load_state_dict(torch.load(path))
+        server.model = server.model.to(device)
+        server.send_parameters()
+        server.update_server_BN()
+        # server.update_user_BN() expect the user BN is saved
+        server.aggregate_parameters()
+        
+        true_label, predict_label = server.test_and_get_label()
+        true_label_list.append(true_label)
+        predict_label_list.append(predict_label)
+        servers.append(server)
     
-    server.model.load_state_dict(torch.load(path))
-    # server.model = torch.load(path)
-    server.model = server.model.to(device)
+    compare_model_PRF_function(true_label_list, true_label_list, "Global model" ,analysis_files)
     
-    if(pm_steps == "pm1"):
-        true_label, predict_label = get_pm1_modal_labels(algorithm, server)
-    elif(pm_steps == "pm5"):
-        true_label, predict_label = get_pm5_modal_labels(algorithm, server)
-    elif(pm_steps == "pm10"):
-        true_label, predict_label = get_pm10_modal_labels(algorithm, server)
-    else:
-        true_label, predict_label = get_global_modal_labels(server)
     
-    return true_label, predict_label
+    # personalize --> pFedMe and PerAvg only
+    if(algorithm == "pFedMe" or algorithm == "PerAvg"):
+        # make prediction with personal model with 1step gradient decent
+        true_label_list = []
+        predict_label_list = []
+
+        for server in servers:
+            for user in server.users:
+                if algorithm == "pFedMe":
+                    user.train(1)
+                elif algorithm == "PerAvg":
+                    user.train_one_step()
+
+            true_label, predict_label = server.test_and_get_label()
+            true_label_list.append(true_label)
+            predict_label_list.append(predict_label)
+
+        compare_model_PRF_function(true_label_list, predict_label_list, f"{algorithm}(PM1)1step", analysis_files)
+
+        
+        # 4 more steps 
+        
+        # make prediction with personal model with 1step gradient decent
+        true_label_list = []
+        predict_label_list = []
+        for server in servers:
+            for user in server.users:
+                if(algorithm == "pFedMe"):
+                    user.train(4)
+                elif(algorithm == "PerAvg"):
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                
+            true_label, predict_label = server.test_and_get_label()
+            true_label_list.append(true_label)
+            predict_label_list.append(predict_label)
+            
+        compare_model_PRF_function(true_label_list, predict_label_list, "{}(PM1)5step".format(algorithm), analysis_files)
+        
+        # make prediction with personal model with 5step gradient decent
+        true_label_list = []
+        predict_label_list = []
+        for server in servers:
+            for user in server.users:
+                if(algorithm == "pFedMe"):
+                    user.train(5)
+                elif(algorithm == "PerAvg"):
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                    user.train_one_step()
+                
+            true_label, predict_label = server.test_and_get_label()
+            true_label_list.append(true_label)
+            predict_label_list.append(predict_label)
+        
+        compare_model_PRF_function(true_label, predict_label, "{}(PM1)10step".format(algorithm), analysis_files)
+
    
-
-def get_global_modal_labels(server):
-    # for global modal 
-    server.send_parameters()
-    server.update_server_BN()
-    # server.update_user_BN() expect the user BN is saved
-    server.aggregate_parameters()
-    
-    true_label, predict_label = server.test_and_get_label()
-    return true_label, predict_label
-    
-def get_pm1_modal_labels(algorithm, server):
-    true_label = []
-    predict_label = []
-    for user in server.users:
-        if(algorithm == "pFedMe"):
-            user.train(1)
-        elif(algorithm == "PerAvg"):
-            user.train_one_step()
-        
-    true_label, predict_label = server.test_and_get_label()
-    
-    return true_label, predict_label
-
-def get_pm5_modal_labels(algorithm, server):
-    true_label = []
-    predict_label = []
-    for user in server.users:
-        if(algorithm == "pFedMe"):
-            user.train(5)
-        elif(algorithm == "PerAvg"):
-            for i in range(5):
-                user.train_one_step()
-        
-    true_label, predict_label = server.test_and_get_label()
-    
-    return true_label, predict_label
-
-def get_pm10_modal_labels(algorithm, server):
-    true_label = []
-    predict_label = []
-    for user in server.users:
-        if(algorithm == "pFedMe"):
-            user.train(10)
-        elif(algorithm == "PerAvg"):
-            for i in range(10):
-                user.train_one_step()
-
-        
-    true_label, predict_label = server.test_and_get_label()
-    
-    return true_label, predict_label
 
 
 if __name__ == "__main__":
@@ -171,21 +188,20 @@ if __name__ == "__main__":
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithms", nargs='+', default=["pFedMe"],choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
+    parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
     parser.add_argument("--times", type=int, default=5, help="running time")
     parser.add_argument("--gpu", type=int, default=0, help="Which GPU to run the experiments, -1 mean CPU, 0,1,2 for GPU")
     parser.add_argument("--analysis_files", nargs='+', default=[""])
-    parser.add_argument("--pm_steps", type=str, default=[""])
     args = parser.parse_args()
 
     print("=" * 80)
     print("Summary of training process:")
-    print("Algorithm: {}".format(args.algorithms))
+    print("Algorithm: {}".format(args.algorithm))
     print("Batch size: {}".format(args.batch_size))
-    print("Learing rate       : {}".format(args.learning_rate))
+    print("Learning rate       : {}".format(args.learning_rate))
     print("Average Moving       : {}".format(args.beta))
     print("Subset of users      : {}".format(args.numusers))
     print("Number of global rounds       : {}".format(args.num_global_iters))
@@ -194,32 +210,23 @@ if __name__ == "__main__":
     print("Local Model       : {}".format(args.model))
     print("=" * 80)
     print("analysis_files       : {}".format(args.analysis_files))
-    print("pm_steps: {}".format(args.pm_steps))
     
-    
-    true_labels_list = [[]]
-    predicted_labels_list = [[]]
-    
-    for i in range(len(args.algorithms)):
         
-        true_labels_list[i], predicted_labels_list[i] = analyse(
-            dataset=args.dataset,
-            algorithm = args.algorithms[i],
-            model=args.model,
-            batch_size=args.batch_size,
-            learning_rate=args.learning_rate,
-            beta = args.beta, 
-            lamda = args.lamda,
-            num_glob_iters=args.num_global_iters,
-            local_iters=args.local_iters,
-            optimizer= args.optimizer,
-            numusers = args.numusers,
-            K=args.K,
-            personal_learning_rate=args.personal_learning_rate,
-            times = args.times,
-            gpu=args.gpu,
-            analysis_file = args.analysis_files[i],
-            pm_steps = args.pm_steps
-        )
-
-    compare_different_PRF(args.algorithms, true_labels_list, predicted_labels_list, args.pm_steps)
+    analyse(
+        dataset=args.dataset,
+        algorithm = args.algorithm,
+        model=args.model,
+        batch_size=args.batch_size,
+        learning_rate=args.learning_rate,
+        beta = args.beta, 
+        lamda = args.lamda,
+        num_glob_iters=args.num_global_iters,
+        local_iters=args.local_iters,
+        optimizer= args.optimizer,
+        numusers = args.numusers,
+        K=args.K,
+        personal_learning_rate=args.personal_learning_rate,
+        times = args.times,
+        gpu=args.gpu,
+        analysis_files = args.analysis_files
+    )
