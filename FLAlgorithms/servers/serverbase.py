@@ -437,9 +437,11 @@ class Server:
         model_files = [f for f in model_files if f.endswith('.pt')]
         for f in model_files:
             if "server" in f:
+                if (self.algorithm + "_" + "server" + ".pt" != f):
+                    print("!!!!!! The loading model of server seem have problem\nThe expect model file: {self.algorithm}_server.pt\nCurent load model file: {f}")
                 path = os.path.join(model_path, f)
                 self.model.load_state_dict(torch.load(path))
         for user in self.users:
-            path = os.path.join(model_path, "user_{user.id}.pt")
+            path = os.path.join(model_path, f"user_{user.id}.pt")
             assert (os.path.exists(path))
             user.model.load_state_dict(torch.load(path))
