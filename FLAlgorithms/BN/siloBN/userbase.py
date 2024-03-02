@@ -173,7 +173,7 @@ class User:
             model_path = os.path.join("models", self.dataset)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
-        torch.save(self.model, os.path.join(model_path, "user_" + self.id + ".pt"))
+        torch.save(self.model.state_dict(), os.path.join(model_path, "user_" + self.id + ".pt"))
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset)
