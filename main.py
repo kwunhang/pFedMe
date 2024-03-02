@@ -101,9 +101,9 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 
         # plot graph after training
         if(dataset== "ISIC19_raw"):
-            # user the best model
-            for user in server.users:
-                user.model = user.best_model
+            # use the best model
+            
+            server.load_all_model()
             
             # load the real test set
             data = read_test_byClient(dataset, "final_test")
