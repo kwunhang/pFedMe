@@ -296,6 +296,7 @@ def read_data(dataset):
     # if(dataset == "Cifar10"):
     #     clients, groups, train_data, test_data = read_cifa_data()
     #     return clients, groups, train_data, test_data
+    print("testing dataset: {}".format(dataset))
     
     if(dataset == "Cifar10ByClient" or dataset == "ISIC19" or dataset == "ISIC19_raw"):
         clients, train_data, test_data = read_data_byClient(dataset)
