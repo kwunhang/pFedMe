@@ -173,14 +173,22 @@ def plot_train_results(h5_path, model_name):
     
     return plt
 
-def compare_model_PRF_function(true_label_list, predict_label_list, graph_name, model_names):
-    assert len(true_label_list) == len(predict_label_list) == len(model_names), "Lists must have the same length."
+def compare_model_PRF_function(true_label_list, predict_label_list, graph_name, analysis_files):
+    assert len(true_label_list) == len(predict_label_list) == len(analysis_files), "Lists must have the same length."
 
     # Initialize dictionaries to hold precision, recall, and f1 scores for each model
     precision_dict = {}
     recall_dict = {}
     f1_dict = {}
-
+    
+    model_names = []
+    
+    for analysis_file in analysis_files:
+        # analysis_file remove the file type
+        file_name, file_extension = os.path.splitext(analysis_file)
+        if file_extension.lower() in (".pt", ".h5"):
+            model_names.append(file_name)
+    
     # Calculate metrics for each model
     for i, model_name in enumerate(model_names):
         precision_dict[model_name] = precision_score(true_label_list[i], predict_label_list[i], average='weighted')

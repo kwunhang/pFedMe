@@ -38,10 +38,10 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         if(dataset == "Mnist"):
             model = Net().to(device), model
         elif(dataset == "Cifar10" or dataset == "Cifar10ByClient"):
-            if "res" in analysis_file:
-                model = ResNet18().to(device), model
-            else:
-                model = CifarNet().to(device), model
+            # if "res" in analysis_file:
+            #     model = ResNet18().to(device), model
+            # else:
+            model = CifarNet().to(device), model
         elif(dataset == "ISIC19"):
             model = ResNet18_isic19(8).to(device), model
         
