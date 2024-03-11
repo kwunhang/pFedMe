@@ -62,7 +62,7 @@ class UserIncFL(User):
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
                 init_loss += self.loss(output, y)
-        self.qk = nn.Sigmoid(init_loss - self.rho)
+        self.qk = nn.Sigmoid()(init_loss - self.rho)
         
         # local_model save the previous model
         self.clone_model_paramenter(self.model.parameters(), self.local_model)
