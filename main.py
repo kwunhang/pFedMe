@@ -139,7 +139,7 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
     parser.add_argument("--lamda", type=int, default=15, help="Regularization term")
-    parser.add_argument("--epsilon", type=int, default=0.01, help="epcilon for IncFL adaptive lr ")
+    parser.add_argument("--epsilon", type=float, default=0.01, help="epcilon for IncFL adaptive lr ")
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
