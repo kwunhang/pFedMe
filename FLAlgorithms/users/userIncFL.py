@@ -61,7 +61,6 @@ class UserIncFL(User):
             for x, y in self.testloaderfull:
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
-                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
                 init_loss += self.loss(output, y)
         self.qk = nn.Sigmoid(init_loss - self.rho)
         
@@ -87,6 +86,5 @@ class UserIncFL(User):
             for x, y in self.testloaderfull:
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
-                test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
                 init_loss += self.loss(output, y)
         self.rho = init_loss
