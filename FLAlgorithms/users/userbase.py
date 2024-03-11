@@ -161,6 +161,13 @@ class User:
         self.update_parameters(self.local_model)
         return train_acc, loss , self.train_samples
     
+    def get_train_delta(self, param, old_model_param):
+        ret_model = copy.deepcopy(param)
+        for new_param, prev_param, ret_param in zip(param, old_model_param , ret_model):
+            ret_param.data = prev_param.data - new_param.data
+        return ret_model
+
+    
     def get_next_train_batch(self):
         try:
             # Samples a new batch for persionalizing

@@ -13,6 +13,7 @@ from FLAlgorithms.servers.serveravg import FedAvg
 from FLAlgorithms.servers.serverpFedMe import pFedMe
 from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.servers.serverself import FedSelf
+from FLAlgorithms.servers.serverIncFL import IncFL
 from FLAlgorithms.trainmodel.models import *
 from utils.model_utils import read_test_byClient, read_user_data
 from utils.plot_utils import *
@@ -27,7 +28,7 @@ load_dotenv()
 
 
 def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, restore, itered):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, restore, itered, epsilon):
 
     # Get device status: Check GPU or CPU
     # cpu = "cpu"
@@ -82,7 +83,9 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         
         if(algorithm == "FedSelf"):
             server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i)
-     
+
+        if(algorithm == "FedInc"):
+            server = IncFL(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i, epsilon)
 
         if (restore == 1 and i==0):
             model_path = "restore"
@@ -136,10 +139,11 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
     parser.add_argument("--lamda", type=int, default=15, help="Regularization term")
+    parser.add_argument("--epsilon", type=int, default=0.01, help="epcilon for IncFL adaptive lr ")
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
+    parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf", "FedInc"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
@@ -183,5 +187,6 @@ if __name__ == "__main__":
         times = args.times,
         gpu=args.gpu,
         restore=args.restore,
-        itered=args.itered
+        itered=args.itered,
+        epsilon=args.epsilon
         )

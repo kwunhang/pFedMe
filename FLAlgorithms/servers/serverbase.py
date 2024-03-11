@@ -203,6 +203,23 @@ class Server:
         for pre_param, param in zip(previous_param, self.model.parameters()):
             param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
             
+    def incfl_aggregate_parameters(self):
+        assert (self.users is not None and len(self.users) > 0)
+        
+        factor_base = self.epsilon
+        for user in self.users:
+            factor_base += user.qk
+        # factor_base += e
+        cur_lr = self.learning_rate / factor_base
+        
+        for user in self.users:
+            self.add_weight(self.model.parameters(),cur_lr,user.qk, user.delta)        
+        # may ratio the weight with training sample       
+
+    def add_weight(self, model_parameters, lr, qk, weight):
+        for model_param, weight_param in zip(model_parameters, weight):
+            model_param.data = model_param.data - lr * qk * weight_param.data
+            
     # Save loss, accurancy to h5 fiel
     def save_results(self, t= None):
         alg = self.dataset + "_" + self.algorithm
