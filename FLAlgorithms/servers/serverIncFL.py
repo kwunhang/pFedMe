@@ -48,7 +48,7 @@ class IncFL(Server):
         self.model.load_state_dict(torch.load(model_path))
         self.send_parameters()
         for user in self.users:
-            user.init_req
+            user.init_rho
         
         for glob_iter in range(start_iter, self.num_glob_iters):
             print("-------------Round number: ",glob_iter, " -------------")
