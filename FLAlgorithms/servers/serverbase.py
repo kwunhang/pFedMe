@@ -212,7 +212,7 @@ class Server:
         # factor_base += e
         cur_lr = self.learning_rate / factor_base
         
-        for user in self.users:
+        for user in self.selected_users:
             self.add_weight(self.model.parameters(),cur_lr,user.qk, user.delta)        
         # may ratio the weight with training sample       
 
