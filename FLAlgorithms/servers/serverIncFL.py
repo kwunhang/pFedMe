@@ -1,7 +1,7 @@
 import torch
 import os
 
-from FLAlgorithms.users.userIncFl import UserIncFL
+from FLAlgorithms.users.userIncFL import UserIncFL
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
 from analysis_utils import plot_function
@@ -44,7 +44,7 @@ class IncFL(Server):
         # load a global model instead of general init, and take it as client requirement
         model_path = os.getenv('INC_INIT_MODEL_PATH')
         if model_path == None or model_path == "":
-            model_path = "IncFL/server_model.pth"
+            model_path = "IncFL/server_model.pt"
         self.model.load_state_dict(torch.load(model_path))
         self.send_parameters()
         for user in self.users:

@@ -167,7 +167,6 @@ class User:
             ret_param.data = prev_param.data - new_param.data
         return ret_model
 
-    
     def get_next_train_batch(self):
         try:
             # Samples a new batch for persionalizing
