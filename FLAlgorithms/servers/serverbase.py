@@ -207,7 +207,7 @@ class Server:
         assert (self.users is not None and len(self.users) > 0)
         
         factor_base = self.epsilon
-        for user in self.select_users:
+        for user in self.selected_users:
             factor_base += user.qk
         # factor_base += e
         cur_lr = self.learning_rate / factor_base
