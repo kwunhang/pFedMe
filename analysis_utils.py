@@ -61,7 +61,7 @@ def computePRF(true_labels, predicted_labels, model_name):
     
     print("debug for plot_path:", plot_path)
     if plot_path == None or plot_path == "":
-        plot_path = "plot"
+        plot_path = "/kaggle/working/pFedMe/cifar_plot"
     if not os.path.exists(plot_path):
             os.makedirs(plot_path)
             
