@@ -347,10 +347,10 @@ class Server:
 
     def evaluate(self):
         stats = self.test()  
-        stats_GM = self.testGM()
+        # stats_GM = self.testGM()
         stats_train = self.train_error_and_loss()
         glob_acc = np.sum(stats[2])*1.0/np.sum(stats[1])
-        glob_acc_GM = np.sum(stats_GM[2])*1.0/np.sum(stats_GM[1])
+        # glob_acc_GM = np.sum(stats_GM[2])*1.0/np.sum(stats_GM[1])
         train_acc = np.sum(stats_train[2])*1.0/np.sum(stats_train[1])
         # train_loss = np.dot(stats_train[3], stats_train[1])*1.0/np.sum(stats_train[1])
         train_loss = sum([x * y for (x, y) in zip(stats_train[1], stats_train[3])]).item() / np.sum(stats_train[1])
@@ -364,7 +364,7 @@ class Server:
         if(last_best >= 30):
             print(f"!!!! There is already {last_best} round no improvemnt!")
         print("Average Global Accurancy: ", glob_acc)
-        print("Average Global Accurancy: (Global model) ", glob_acc_GM)
+        # print("Average Global Accurancy: (Global model) ", glob_acc_GM)
         print("Average Global Trainning Accurancy: ", train_acc)
         print("Average Global Trainning Loss: ",train_loss)
 
