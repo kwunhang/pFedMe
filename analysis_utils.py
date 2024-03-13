@@ -27,7 +27,7 @@ def plot_cm(true_labels, predict_labels, model_name):
     
     plot_path = os.getenv('SAVE_PLOT_PATH')
     if plot_path == None or plot_path == "":
-        plot_path = "plot"
+        plot_path = "/kaggle/working/pFedMe/cifar_plot"
     if not os.path.exists(plot_path):
         os.makedirs(plot_path)
     fig, ax = plt.subplots()
