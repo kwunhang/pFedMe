@@ -41,7 +41,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                 model = ResNet18().to(device), model
             else:
                 model = CifarNet().to(device), model
-        elif(dataset == "ISIC19" or dataset == "ISIC19_raw"):
+        elif(dataset == "ISIC19"):
             model = ResNet18_isic19(8).to(device), model
         
     if(model == "dnn"):
@@ -85,8 +85,25 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "FedSelf"):
         server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i)
 
-    
-    
+        # plot graph after training
+    if(dataset== "ISIC19_raw"):
+        # use the best model
+        
+        server.load_all_model()
+        
+        # load the real test set
+        data = read_test_byClient(dataset, "final_test")
+        total_users = len(data[0])
+        for i in range(total_users):
+            uid, train , test = read_user_data(i, data, dataset)
+            # find user by id
+            the_user = None
+            for user in server.users:
+                if user.id == uid:
+                    the_user = user
+                    break
+            the_user.new_dataloader(train , test)
+
 
     # global model 
     assert (os.path.exists(path))
