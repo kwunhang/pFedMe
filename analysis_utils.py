@@ -58,6 +58,8 @@ def computePRF(true_labels, predicted_labels, model_name):
     f1 = f1_score(true_labels, predicted_labels, average=None)
     
     plot_path = os.getenv('SAVE_PLOT_PATH')
+    
+    print("debug for plot_path:", plot_path)
     if plot_path == None or plot_path == "":
         plot_path = "plot"
     if not os.path.exists(plot_path):
