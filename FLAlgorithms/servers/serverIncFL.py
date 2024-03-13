@@ -95,24 +95,9 @@ class IncFL(Server):
         graph_name = self.dataset + self.algorithm
         self.send_parameters()
         true_label, predict_label = self.test_and_get_label()
-        acc = plot_function(true_label, predict_label, graph_name)
-        acc_log.append(acc)
+        log = plot_function(true_label, predict_label, graph_name)
+        acc_log.append(log)
         
-        self.trainAllClient(step=1)
-        true_label, predict_label = self.test_and_get_label()
-        acc = plot_function(true_label, predict_label, "{}(PM)1step".format(graph_name))
-        acc_log.append(acc)
-        
-        self.trainAllClient(step=4)
-        true_label, predict_label = self.test_and_get_label()
-        acc = plot_function(true_label, predict_label, "{}(PM)5step".format(graph_name))
-        acc_log.append(acc)
-        
-        self.trainAllClient(step=5)
-        true_label, predict_label = self.test_and_get_label()
-        acc = plot_function(true_label, predict_label, "{}(PM)10step".format(graph_name))
-        acc_log.append(acc)
-                
         plot_path = os.getenv('SAVE_PLOT_PATH')
         if plot_path == None or plot_path == "":
             plot_path = "plot"
