@@ -64,6 +64,8 @@ def computePRF(true_labels, predicted_labels, model_name):
         plot_path = "plot"
     if not os.path.exists(plot_path):
             os.makedirs(plot_path)
+            
+    print("debug for plot_path2:", plot_path)
     
     label = np.unique(true_labels)
     num_x = np.arange(len(label))
