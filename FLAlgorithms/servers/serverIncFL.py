@@ -59,7 +59,7 @@ class IncFL(Server):
             # Evaluate gloal model on user for each interation
             # print("Evaluate global model with one step update")
             # print("")
-            # self.evaluate_one_step()
+            self.evaluate()
             # self.save_best_model(glob_iter)
 
             # choose several users to send back upated model to server
