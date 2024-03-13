@@ -88,7 +88,6 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         # plot graph after training
     if(dataset== "ISIC19_raw"):
         # use the best model
-        
         server.load_all_model()
         
         # load the real test set
@@ -103,6 +102,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                     the_user = user
                     break
             the_user.new_dataloader(train , test)
+        
+        print("debug: load all model and data")
 
 
     # global model 
