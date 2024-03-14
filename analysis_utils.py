@@ -101,7 +101,7 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
         performance_metrics[model_name]['recall'] = recall
         performance_metrics[model_name]['f1'] = f1
 
-    # Plotting the comparison
+    plot_path = os.getenv('SAVE_PLOT_PATH')
     print("debug for plot_path:", plot_path)
     if plot_path == None or plot_path == "":
         plot_path = "/kaggle/working/pFedMe/cifar_plot"

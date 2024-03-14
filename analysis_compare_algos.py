@@ -178,7 +178,7 @@ if __name__ == "__main__":
     parser.add_argument("--times", type=int, default=5, help="running time")
     parser.add_argument("--gpu", type=int, default=0, help="Which GPU to run the experiments, -1 mean CPU, 0,1,2 for GPU")
     parser.add_argument("--analysis_files", nargs='+', default=[""])
-    parser.add_argument("--pm_steps", type=str, default=[""])
+    parser.add_argument("--pm_steps", type=str, default="")
     args = parser.parse_args()
 
     print("=" * 80)
