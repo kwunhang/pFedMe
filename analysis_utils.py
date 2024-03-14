@@ -85,7 +85,7 @@ def computePRF(true_labels, predicted_labels, model_name):
     plt.axis([-1, len(label), 0, 1])
     plt.savefig(fname=(plot_path+"/prf_"+model_name))
     plt.show()
-    
+
 def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
     performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in algorithms}
 
@@ -105,41 +105,33 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
 
     labels = np.unique(np.concatenate(true_labels_list))
     
-    figs = []
+    fig, ax = plt.subplots(figsize=(12, 6))
     
-    # Separate metrics into different subplots
-    for metric in ['precision', 'recall', 'f1']:
-        figs.append(plt.figure(figsize=(12, 6)))
+    bar_width = 0.3
+    x_pos_base = np.arange(len(labels))
+    
+    for i_alg , algorithm in enumerate(algorithms):
+        precision = performance_metrics[algorithm]['precision']
+        recall = performance_metrics[algorithm]['recall']
+        f1 = performance_metrics[algorithm]['f1']
         
-        ax = plt.gca()
+        x_pos = x_pos_base + i_alg * bar_width / 3
         
-        bar_width = 0.3
+        ax.bar(x_pos, precision, bar_width / 3, label=f'Precision - {algorithm}')
+        ax.bar(x_pos + bar_width / 3, recall, bar_width / 3, label=f'Recall - {algorithm}', alpha=0.7)
+        ax.bar(x_pos + 2 * bar_width / 3, f1, bar_width / 3, label=f'F1 Score - {algorithm}', alpha=0.5)
         
-        x_pos_base = np.arange(len(labels))
+        ax.set_xticks(x_pos_base + bar_width / 2)
+        ax.set_xticklabels(labels)
         
-        for i_alg , algorithm in enumerate(algorithms):
-            scores_for_metric_algorithm_classwise=performance_metrics[algorithm][metric]
-            
-            x_pos=x_pos_base + i_alg * bar_width
-            
-            ax.bar(x_pos,scores_for_metric_algorithm_classwise,width=bar_width,label=f'{metric.capitalize()} - {algorithm}')
-            
-            ax.set_xticks(x_pos_base + bar_width / 2 * len(algorithms))
-            ax.set_xticklabels(labels)
-            
-            ax.legend()
-            
-            plt.title(f'{metric.capitalize()} by Class and Model - {pm_steps}')
-            
-            plt.ylabel(metric.capitalize())
-            
-            plt.xlabel('Class')
+        ax.legend()
         
-        # Save each metric's plot as a separate file
-        plt.savefig(os.path.join(plot_path,f"{metric}_comparison_{pm_steps}.png"))
-        plt.show()
-
-
+        plt.title(f'Precision, Recall, and F1 Score by Class and Model - {pm_steps}')
+        plt.ylabel('Scores')
+        plt.xlabel('Class')
+    
+    plt.savefig(os.path.join(plot_path,f"prf_comparison_{pm_steps}.png"))
+    plt.show()
 
 def plot_train_results(h5_path, model_name):
     with h5py.File(h5_path, 'r') as hf:
