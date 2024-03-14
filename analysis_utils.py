@@ -87,9 +87,9 @@ def computePRF(true_labels, predicted_labels, model_name):
     plt.show()
 
 def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, pm_steps):
-    
-    if(pm_steps == ""):
+    if pm_steps == "":
         pm_steps = "Global Model"
+    
     # Define a dictionary to hold the precision, recall, and f1 score for each algorithm
     performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in algorithms}
 
@@ -105,8 +105,13 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
         computePRF(true_labels, predicted_labels, model_name)  # Call the computePRF function for each algorithm
 
     # Plotting the comparison
-    plot_path = os.getenv('SAVE_PLOT_PATH', 'plot')
-    os.makedirs(plot_path, exist_ok=True)
+    plot_path = os.getenv('SAVE_PLOT_PATH')
+    
+    print("debug for plot_path:", plot_path)
+    if plot_path == None or plot_path == "":
+        plot_path = "/kaggle/working/pFedMe/cifar_plot"
+    if not os.path.exists(plot_path):
+            os.makedirs(plot_path)
 
     labels = np.unique(np.concatenate(true_labels_list))  # assuming all algorithms have the same label set
     num_x = np.arange(len(labels))
