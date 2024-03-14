@@ -91,18 +91,19 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
     performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in algorithms}
 
     # Compute PRF for each algorithm
-    for model_name, true_labels, predicted_labels in zip(algorithms, true_labels_list, predicted_labels_list):
+    for algorithm, true_labels, predicted_labels in zip(algorithms, true_labels_list, predicted_labels_list):
         precision = precision_score(true_labels, predicted_labels, average=None)
         recall = recall_score(true_labels, predicted_labels, average=None)
         f1 = f1_score(true_labels, predicted_labels, average=None)
 
-        performance_metrics[model_name]['precision'] = precision
-        performance_metrics[model_name]['recall'] = recall
-        performance_metrics[model_name]['f1'] = f1
+        performance_metrics[algorithm]['precision'] = precision
+        performance_metrics[algorithm]['recall'] = recall
+        performance_metrics[algorithm]['f1'] = f1
+        computePRF(true_labels, predicted_labels, algorithm)
 
-
-    # path to save the plot
+    # Plotting the comparison
     plot_path = os.getenv('SAVE_PLOT_PATH')
+    
     print("debug for plot_path:", plot_path)
     if plot_path == None or plot_path == "":
         plot_path = "/kaggle/working/pFedMe/cifar_plot"
@@ -112,21 +113,22 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
     labels = np.unique(np.concatenate(true_labels_list))  # assuming all algorithms have the same label set
     num_labels = len(labels)
     num_algorithms = len(algorithms)
-    bar_width = 0.8 / (num_algorithms * 3)  # Adjusted to fit precision, recall, and F1 for each algorithm side by side
-    bar_offset = bar_width * num_algorithms
-
-    fig, ax = plt.subplots(figsize=(12, 6))
+    bar_width = 0.8 / num_algorithms  # Width of bars for each metric
     x = np.arange(num_labels)  # the label locations
 
-    for i, model_name in enumerate(algorithms):
-        precision = performance_metrics[model_name]['precision']
-        recall = performance_metrics[model_name]['recall']
-        f1 = performance_metrics[model_name]['f1']
+    fig, ax = plt.subplots(figsize=(12, 6))
 
-        # Calculate the x position for each group of bars
-        p1 = ax.bar(x - bar_offset + i * bar_width, precision, bar_width, label=f'Precision - {model_name}')
-        p2 = ax.bar(x + i * bar_width, recall, bar_width, label=f'Recall - {model_name}')
-        p3 = ax.bar(x + bar_offset + i * bar_width, f1, bar_width, label=f'F1 Score - {model_name}')
+    for i, algorithm in enumerate(algorithms):
+        precision = performance_metrics[algorithm]['precision']
+        recall = performance_metrics[algorithm]['recall']
+        f1 = performance_metrics[algorithm]['f1']
+
+        # Calculate the x position for each set of bars for the current algorithm
+        x_pos = x + (i - num_algorithms / 2) * bar_width + bar_width / 2
+
+        p1 = ax.bar(x_pos, precision, bar_width, label=f'Precision - {algorithm}')
+        p2 = ax.bar(x_pos, recall, bar_width, bottom=precision, label=f'Recall - {algorithm}', alpha=0.5)
+        p3 = ax.bar(x_pos + bar_width, f1, bar_width, label=f'F1 Score - {algorithm}', alpha=0.5)
 
     # Add some text for labels, title, and custom x-axis tick labels, etc.
     ax.set_ylabel('Scores')
@@ -134,13 +136,6 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.legend()
-
-    # To accommodate the legend, we shrink the current axis's height by 10% on the bottom
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
-
-    # Put a legend below the current axis
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=True, ncol=5)
 
     plt.xticks(rotation=45)
     plt.tight_layout()
