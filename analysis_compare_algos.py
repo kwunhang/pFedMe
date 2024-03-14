@@ -197,8 +197,8 @@ if __name__ == "__main__":
     print("pm_steps: {}".format(args.pm_steps))
     
     
-    true_labels_list = [[]]
-    predicted_labels_list = [[]]
+    true_labels_list = []
+    predicted_labels_list = []
     
     for i in range(len(args.algorithms)):
         
