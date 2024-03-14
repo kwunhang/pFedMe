@@ -202,7 +202,7 @@ if __name__ == "__main__":
     
     for i in range(len(args.algorithms)):
         
-        true_labels_list[i], predicted_labels_list[i] = analyse(
+        true_labels, predicted_labels = analyse(
             dataset=args.dataset,
             algorithm = args.algorithms[i],
             model=args.model,
@@ -221,5 +221,7 @@ if __name__ == "__main__":
             analysis_file = args.analysis_files[i],
             pm_steps = args.pm_steps
         )
+        true_labels_list.append(true_labels)
+        predicted_labels_list.append(predicted_labels)
 
     compare_different_PRF(args.algorithms, true_labels_list, predicted_labels_list, args.pm_steps)
