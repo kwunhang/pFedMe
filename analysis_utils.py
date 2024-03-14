@@ -103,34 +103,34 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
     if not os.path.exists(plot_path):
             os.makedirs(plot_path)
 
-    labels = np.unique(np.concatenate(true_labels_list))
-    
+    labels = ['Precision', 'Recall', 'F1']
+    num_labels = len(labels)
+    num_algorithms = len(algorithms)
+    bar_width = 0.8 / num_algorithms  # Width of bars for each metric
+    x = np.arange(num_labels)  # the label locations
+
     fig, ax = plt.subplots(figsize=(12, 6))
-    
-    bar_width = 0.3
-    x_pos_base = np.arange(len(labels))
-    
-    for i_alg , algorithm in enumerate(algorithms):
-        precision = performance_metrics[algorithm]['precision']
-        recall = performance_metrics[algorithm]['recall']
-        f1 = performance_metrics[algorithm]['f1']
-        
-        x_pos = x_pos_base + i_alg * bar_width / 3
-        
-        ax.bar(x_pos, precision, bar_width / 3, label=f'Precision - {algorithm}')
-        ax.bar(x_pos + bar_width / 3, recall, bar_width / 3, label=f'Recall - {algorithm}', alpha=0.7)
-        ax.bar(x_pos + 2 * bar_width / 3, f1, bar_width / 3, label=f'F1 Score - {algorithm}', alpha=0.5)
-        
-        ax.set_xticks(x_pos_base + bar_width / 2)
-        ax.set_xticklabels(labels)
-        
-        ax.legend()
-        
-        plt.title(f'Precision, Recall, and F1 Score by Class and Model - {pm_steps}')
-        plt.ylabel('Scores')
-        plt.xlabel('Class')
-    
-    plt.savefig(os.path.join(plot_path,f"prf_comparison_{pm_steps}.png"))
+
+    for i, algorithm in enumerate(algorithms):
+        precision = np.mean(performance_metrics[algorithm]['precision'])
+        recall = np.mean(performance_metrics[algorithm]['recall'])
+        f1 = np.mean(performance_metrics[algorithm]['f1'])
+
+        # Calculate the x position for each set of bars for the current algorithm
+        x_pos = x + (i - num_algorithms / 2) * bar_width + bar_width / 2
+
+        ax.bar(x_pos, [precision, recall, f1], bar_width, label=algorithm)
+
+    # Add some text for labels, title, and custom x-axis tick labels, etc.
+    ax.set_ylabel('Scores')
+    ax.set_title(f'Precision, Recall, and F1 Score by Model - {pm_steps}')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.savefig(fname=os.path.join(plot_path, f"prf_comparison_{pm_steps}.png"))
     plt.show()
 
 def plot_train_results(h5_path, model_name):
