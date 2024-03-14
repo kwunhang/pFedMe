@@ -93,7 +93,7 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
         precision = precision_score(true_labels, predicted_labels)
         recall = recall_score(true_labels, predicted_labels)
         f1 = f1_score(true_labels, predicted_labels)
-        
+
 
         performance_metrics[algorithm]['precision'].append(precision)
         performance_metrics[algorithm]['recall'].append(recall)
@@ -136,9 +136,9 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
             
             plt.xlabel('Class')
         
-         # Save each metric's plot as a separate file
-         plt.savefig(os.path.join(plot_path,f"{metric}_comparison_{pm_steps}.png"))
-         plt.show()
+        # Save each metric's plot as a separate file
+        plt.savefig(os.path.join(plot_path,f"{metric}_comparison_{pm_steps}.png"))
+        plt.show()
 
 
 
