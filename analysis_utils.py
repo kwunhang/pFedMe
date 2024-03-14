@@ -85,8 +85,7 @@ def computePRF(true_labels, predicted_labels, model_name):
     plt.axis([-1, len(label), 0, 1])
     plt.savefig(fname=(plot_path+"/prf_"+model_name))
     plt.show()
-
-
+    
 def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
     # Define a dictionary to hold the precision, recall, and f1 score for each algorithm
     performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in algorithms}
@@ -101,6 +100,8 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
         performance_metrics[model_name]['recall'] = recall
         performance_metrics[model_name]['f1'] = f1
 
+
+    # path to save the plot
     plot_path = os.getenv('SAVE_PLOT_PATH')
     print("debug for plot_path:", plot_path)
     if plot_path == None or plot_path == "":
@@ -111,32 +112,37 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
     labels = np.unique(np.concatenate(true_labels_list))  # assuming all algorithms have the same label set
     num_labels = len(labels)
     num_algorithms = len(algorithms)
-    width = 0.8 / (num_algorithms * 3)  # Adjusted to fit precision, recall, and F1 for each algorithm side by side
-    fig, ax = plt.subplots(figsize=(12, 6))
+    bar_width = 0.8 / (num_algorithms * 3)  # Adjusted to fit precision, recall, and F1 for each algorithm side by side
+    bar_offset = bar_width * num_algorithms
 
-    # Calculate the offset to center the group of bars for each class
-    total_width = width * num_algorithms * 3
-    offset = (total_width - width) / 2
+    fig, ax = plt.subplots(figsize=(12, 6))
+    x = np.arange(num_labels)  # the label locations
 
     for i, model_name in enumerate(algorithms):
-        indices = np.arange(num_labels) * total_width + i * width - offset
         precision = performance_metrics[model_name]['precision']
         recall = performance_metrics[model_name]['recall']
         f1 = performance_metrics[model_name]['f1']
 
-        # Plot the bars for precision, recall, and f1 scores
-        ax.bar(indices, precision, width, label=f'Precision - {model_name}')
-        ax.bar(indices + width * num_algorithms, recall, width, label=f'Recall - {model_name}')
-        ax.bar(indices + width * num_algorithms * 2, f1, width, label=f'F1 Score - {model_name}')
+        # Calculate the x position for each group of bars
+        p1 = ax.bar(x - bar_offset + i * bar_width, precision, bar_width, label=f'Precision - {model_name}')
+        p2 = ax.bar(x + i * bar_width, recall, bar_width, label=f'Recall - {model_name}')
+        p3 = ax.bar(x + bar_offset + i * bar_width, f1, bar_width, label=f'F1 Score - {model_name}')
 
+    # Add some text for labels, title, and custom x-axis tick labels, etc.
     ax.set_ylabel('Scores')
     ax.set_title(f'Precision, Recall, and F1 Score by Class and Model - {pm_steps}')
-    ax.set_xticks(np.arange(num_labels) * total_width)
+    ax.set_xticks(x)
     ax.set_xticklabels(labels)
-    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax.legend()
+
+    # To accommodate the legend, we shrink the current axis's height by 10% on the bottom
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0 + box.height * 0.1, box.width, box.height * 0.9])
+
+    # Put a legend below the current axis
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, shadow=True, ncol=5)
 
     plt.xticks(rotation=45)
-    plt.axis([-width, num_labels * total_width, 0, 1])
     plt.tight_layout()
     plt.savefig(fname=os.path.join(plot_path, f"prf_comparison_{pm_steps}.png"))
     plt.show()
