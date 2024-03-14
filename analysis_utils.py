@@ -90,10 +90,9 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
     performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in algorithms}
 
     for algorithm, true_labels, predicted_labels in zip(algorithms, true_labels_list, predicted_labels_list):
-        precision = precision_score(true_labels, predicted_labels)
-        recall = recall_score(true_labels, predicted_labels)
-        f1 = f1_score(true_labels, predicted_labels)
-
+        precision = precision_score(true_labels, predicted_labels, average='macro')
+        recall = recall_score(true_labels, predicted_labels, average='macro')
+        f1 = f1_score(true_labels, predicted_labels, average='macro')
 
         performance_metrics[algorithm]['precision'].append(precision)
         performance_metrics[algorithm]['recall'].append(recall)
