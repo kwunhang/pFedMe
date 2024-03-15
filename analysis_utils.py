@@ -86,17 +86,17 @@ def computePRF(true_labels, predicted_labels, model_name):
     plt.savefig(fname=(plot_path+"/prf_"+model_name))
     plt.show()
 
-def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
-    performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in algorithms}
+def compare_different_PRF(client_labels, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
+    performance_metrics = {alg: {'precision': [], 'recall': [], 'f1': []} for alg in client_labels}
 
-    for algorithm, true_labels, predicted_labels in zip(algorithms, true_labels_list, predicted_labels_list):
+    for client_label, true_labels, predicted_labels in zip(client_labels, true_labels_list, predicted_labels_list):
         precision = precision_score(true_labels, predicted_labels, average='macro')
         recall = recall_score(true_labels, predicted_labels, average='macro')
         f1 = f1_score(true_labels, predicted_labels, average='macro')
 
-        performance_metrics[algorithm]['precision'].append(precision)
-        performance_metrics[algorithm]['recall'].append(recall)
-        performance_metrics[algorithm]['f1'].append(f1)
+        performance_metrics[client_label]['precision'].append(precision)
+        performance_metrics[client_label]['recall'].append(recall)
+        performance_metrics[client_label]['f1'].append(f1)
 
     plot_path = os.getenv('SAVE_PLOT_PATH', "/kaggle/working/pFedMe/cifar_plot")
     if not os.path.exists(plot_path):
@@ -105,14 +105,14 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
     metrics = ['precision', 'recall', 'f1']
     for metric in metrics:
         fig, ax = plt.subplots(figsize=(12, 6))
-        for i, algorithm in enumerate(algorithms):
-            scores = np.mean(performance_metrics[algorithm][metric])
-            ax.bar(i, scores, label=algorithm)
+        for i, client_label in enumerate(client_labels):
+            scores = np.mean(performance_metrics[client_label][metric])
+            ax.bar(i, scores, label=client_label)
 
         ax.set_ylabel('Scores')
         ax.set_title(f'{metric.capitalize()} Score by Model - {pm_steps}')
-        ax.set_xticks(range(len(algorithms)))
-        ax.set_xticklabels(algorithms)
+        ax.set_xticks(range(len(client_labels)))
+        ax.set_xticklabels(client_labels)
         ax.legend()
 
         plt.xticks(rotation=45)
