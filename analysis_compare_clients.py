@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     print("=" * 80)
     print("Summary of training process:")
-    print("Algorithm: {}".format(args.algorithms))
+    print("Algorithm: {}".format(args.algorithm))
     print("Batch size: {}".format(args.batch_size))
     print("Learning rate       : {}".format(args.learning_rate))
     print("Average Moving       : {}".format(args.beta))
