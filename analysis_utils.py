@@ -97,41 +97,28 @@ def compare_different_PRF(algorithms, true_labels_list, predicted_labels_list, p
         performance_metrics[algorithm]['precision'].append(precision)
         performance_metrics[algorithm]['recall'].append(recall)
         performance_metrics[algorithm]['f1'].append(f1)
-        computePRF(true_labels, predicted_labels, algorithm)
 
     plot_path = os.getenv('SAVE_PLOT_PATH', "/kaggle/working/pFedMe/cifar_plot")
     if not os.path.exists(plot_path):
-            os.makedirs(plot_path)
+        os.makedirs(plot_path)
 
-    labels = ['Precision', 'Recall', 'F1']
-    num_labels = len(labels)
-    num_algorithms = len(algorithms)
-    bar_width = 0.8 / num_algorithms  # Width of bars for each metric
-    x = np.arange(num_labels)  # the label locations
+    metrics = ['precision', 'recall', 'f1']
+    for metric in metrics:
+        fig, ax = plt.subplots(figsize=(12, 6))
+        for i, algorithm in enumerate(algorithms):
+            scores = np.mean(performance_metrics[algorithm][metric])
+            ax.bar(i, scores, label=algorithm)
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+        ax.set_ylabel('Scores')
+        ax.set_title(f'{metric.capitalize()} Score by Model - {pm_steps}')
+        ax.set_xticks(range(len(algorithms)))
+        ax.set_xticklabels(algorithms)
+        ax.legend()
 
-    for i, algorithm in enumerate(algorithms):
-        precision = np.mean(performance_metrics[algorithm]['precision'])
-        recall = np.mean(performance_metrics[algorithm]['recall'])
-        f1 = np.mean(performance_metrics[algorithm]['f1'])
-
-        # Calculate the x position for each set of bars for the current algorithm
-        x_pos = x + (i - num_algorithms / 2) * bar_width + bar_width / 2
-
-        ax.bar(x_pos, [precision, recall, f1], bar_width, label=algorithm)
-
-    # Add some text for labels, title, and custom x-axis tick labels, etc.
-    ax.set_ylabel('Scores')
-    ax.set_title(f'Precision, Recall, and F1 Score by Model - {pm_steps}')
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels)
-    ax.legend()
-
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig(fname=os.path.join(plot_path, f"prf_comparison_{pm_steps}.png"))
-    plt.show()
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig(fname=os.path.join(plot_path, f"{metric}_comparison_{pm_steps}.png"))
+        plt.show()
 
 def plot_train_results(h5_path, model_name):
     with h5py.File(h5_path, 'r') as hf:
