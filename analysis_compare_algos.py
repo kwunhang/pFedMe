@@ -247,7 +247,7 @@ for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_a
             learning_rate=args.learning_rate,
             beta=args.beta, 
             lamda=args.lamda,
-            num_glob_iters=args.num_glob_iters,
+            num_glob_iters=args.num_global_iters,
             local_iters=args.local_iters,
             optimizer=args.optimizer,
             numusers=args.numusers,
