@@ -262,9 +262,18 @@ for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_a
     # Append the results to their respective lists
     print("debug type :")
     print(type(true_labels))
+    print(type(predicted_labels))
+    print(type(client_labels))
     true_labels_list.append(true_labels)
     predicted_labels_list.append(predicted_labels)
     client_labels_list.append(client_labels)
+    
+    print("debug true_labels_list:")
+    print(true_labels_list)
+    print("debug predicted_labels_list:")
+    print(predicted_labels_list)
+    print("debug client_labels_list:")
+    print(client_labels_list)
 
 
     compare_different_PRF_Algo(args.algorithms, client_labels_list, true_labels_list, predicted_labels_list, args.pm_steps)
