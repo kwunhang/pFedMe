@@ -121,7 +121,7 @@ def compare_different_PRF(client_labels, true_labels_list, predicted_labels_list
         plt.show()
 
 def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
-    client_labels = ['_'.join(map(str, sublist)) for sublist in client_labels]
+    # client_labels = ['_'.join(map(str, sublist)) for sublist in client_labels]
     performance_metrics = {alg: {client: {'precision': [], 'recall': [], 'f1': []} for client in client_labels} for alg in algorithms}
 
     for algorithm, true_labels_list_alg, predicted_labels_list_alg in zip(algorithms, true_labels_list, predicted_labels_list):

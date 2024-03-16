@@ -239,7 +239,7 @@ if __name__ == "__main__":
     
 for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one], args.algorithms):
     if len(analysis_files) > 0:
-        true_labels, predicted_labels, client_labels = collect_data(
+        client_labels,true_labels, predicted_labels = collect_data(
             dataset=args.dataset,
             algorithm=algorithm,
             model=args.model,
