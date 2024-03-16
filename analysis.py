@@ -41,7 +41,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                 model = ResNet18().to(device), model
             else:
                 model = CifarNet().to(device), model
-        elif(dataset == "ISIC19"):
+        elif(dataset == "ISIC19" or dataset == "ISIC19_raw"):
             model = ResNet18_isic19(8).to(device), model
         
     if(model == "dnn"):
@@ -108,6 +108,9 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     
     # check file type
     if(path.endswith(".pt")):   
+        
+        print("debug ******************************")
+        print("path:", path)
         server.model.load_state_dict(torch.load(path))
                 # server.model = torch.load(path)
         server.model = server.model.to(device)

@@ -90,8 +90,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     elif("fed" in analysis_file):
         graph_name = graph_name+"_"+"fed"
 
-    server.model.load_state_dict(torch.load(path))
-    # server.model = torch.load(path)
+    # server.model.load_state_dict(torch.load(path))
+    server.model = torch.load(path)
     server.model = server.model.to(device)
 
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithms", nargs='+', default=["pFedMe"],choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
+    parser.add_argument("--algorithm", type=str, default=["pFedMe"],choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
@@ -183,9 +183,9 @@ if __name__ == "__main__":
 
     print("=" * 80)
     print("Summary of training process:")
-    print("Algorithm: {}".format(args.algorithms))
+    print("Algorithm: {}".format(args.algorithm))
     print("Batch size: {}".format(args.batch_size))
-    print("Learing rate       : {}".format(args.learning_rate))
+    print("Learning rate       : {}".format(args.learning_rate))
     print("Average Moving       : {}".format(args.beta))
     print("Subset of users      : {}".format(args.numusers))
     print("Number of global rounds       : {}".format(args.num_global_iters))
@@ -199,12 +199,12 @@ if __name__ == "__main__":
     
     true_labels_list = []
     predicted_labels_list = []
-    
-    for i in range(len(args.algorithms)):
+    client_labels = []
+    for i in range(len(args.analysis_files)):
         
         true_labels, predicted_labels = analyse(
             dataset=args.dataset,
-            algorithm = args.algorithms[i],
+            algorithm = args.algorithm,
             model=args.model,
             batch_size=args.batch_size,
             learning_rate=args.learning_rate,
@@ -223,5 +223,7 @@ if __name__ == "__main__":
         )
         true_labels_list.append(true_labels)
         predicted_labels_list.append(predicted_labels)
+        filename, extension = os.path.splitext(args.analysis_files[i])
+        client_labels.append(filename)
 
-    compare_different_PRF(args.algorithms, true_labels_list, predicted_labels_list, args.pm_steps)
+    compare_different_PRF(client_labels, true_labels_list, predicted_labels_list, args.pm_steps)
