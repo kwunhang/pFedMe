@@ -205,7 +205,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithm", nargs='+', default=["pFedMe"], choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
+    parser.add_argument("--algorithms", nargs='+', default=["pFedMe"], choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
@@ -218,7 +218,7 @@ if __name__ == "__main__":
 
     print("=" * 80)
     print("Summary of training process:")
-    print("Algorithm: {}".format(args.algorithm))
+    print("Algorithms: {}".format(args.algorithms))
     print("Batch size: {}".format(args.batch_size))
     print("Learning rate       : {}".format(args.learning_rate))
     print("Average Moving       : {}".format(args.beta))
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     predicted_labels_list = []
     client_labels_list = []
     
-for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one], args.algorithm):
+for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one], args.algorithms):
     if len(analysis_files) > 0:
         true_labels, predicted_labels, client_labels = collect_data(
             dataset=args.dataset,
@@ -265,4 +265,4 @@ for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_a
     client_labels_list.append(client_labels)
 
 
-    compare_different_PRF_Algo(args.algorithm, client_labels_list, true_labels_list, predicted_labels_list, args.pm_steps)
+    compare_different_PRF_Algo(args.algorithms, client_labels_list, true_labels_list, predicted_labels_list, args.pm_steps)
