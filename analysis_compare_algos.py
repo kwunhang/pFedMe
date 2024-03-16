@@ -260,6 +260,7 @@ for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_a
         )
 
     # Append the results to their respective lists
+    print("debug type :" + type(true_labels))
     true_labels_list.append(true_labels)
     predicted_labels_list.append(predicted_labels)
     client_labels_list.append(client_labels)
