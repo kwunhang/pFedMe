@@ -122,7 +122,7 @@ def compare_different_PRF(client_labels, true_labels_list, predicted_labels_list
 
 def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
     # Flatten the list of client_labels and remove duplicates
-    client_labels = list(set(['_'.join(item.split('_')[2:-1]) for sublist in client_labels for item in sublist]))
+    client_labels = list(set(['_'.join(item.split('_')[1:-1]) for sublist in client_labels for item in sublist]))
     # client_labels = list(set(['_'.join(item.split('_')[1:3]) for sublist in client_labels for item in sublist]))
     performance_metrics = {alg: {client: {'precision': [], 'recall': [], 'f1': []} for client in client_labels} for alg in algorithms}
 
