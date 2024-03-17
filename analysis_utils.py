@@ -166,6 +166,7 @@ def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, pred
         
         plt.show()
 
+
 # def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
 #     # Create short labels from file names
 #     client_labels = [os.path.splitext(file)[0].split('_')[-1] for sublist in client_labels for file in sublist]
