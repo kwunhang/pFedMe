@@ -144,7 +144,10 @@ def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, pred
         bar_width=0.15
         index=np.arange(len(client_labels))
 
-        for i,(algorithm,label) in enumerate(zip(algorithms,['A','B','C'])):
+        # Create labels based on the number of algorithms
+        labels = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')[:len(algorithms)]
+
+        for i,(algorithm,label) in enumerate(zip(algorithms, labels)):
             scores=[np.mean(performance_metrics[algorithm][client][metric])for client in client_labels]
             ax.bar(index+i*bar_width,scores,width=bar_width,label=f'{label}-{algorithm}')
 
