@@ -530,7 +530,10 @@ class ISIC19Dataset(Dataset):
 
         if self.transform:
             # x = np.transpose(x.numpy(), (1,2,0)) #ToTensorV2 change[h,w,c] -> [c,h,w], revert the change
+            
             # x = self.transform(x)
+            
+            image = np.array(image)
             image = {"image": x}
             image = self.transform(**image)["image"]
             x=image
