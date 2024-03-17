@@ -121,8 +121,8 @@ def compare_different_PRF(client_labels, true_labels_list, predicted_labels_list
         plt.show()
 
 def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
-    # Simplify the client_labels
-    client_labels = [' '.join(item.split('_')[2:-1]) for sublist in client_labels for item in sublist]
+    # Flatten the list of client_labels and remove duplicates
+    client_labels = list(set([' '.join(item.split('_')[2:-1]) for sublist in client_labels for item in sublist]))
     performance_metrics = {alg: {client: {'precision': [], 'recall': [], 'f1': []} for client in client_labels} for alg in algorithms}
 
     for algorithm, true_labels_list_alg, predicted_labels_list_alg in zip(algorithms, true_labels_list, predicted_labels_list):
@@ -165,8 +165,6 @@ def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, pred
         plt.savefig(fname=os.path.join(plot_path,f"{metric}_comparison_{pm_steps}.png"))
         
         plt.show()
-
-
 
 # def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
 #     # Create short labels from file names
