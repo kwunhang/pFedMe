@@ -450,6 +450,14 @@ def new_train_transforms():
     return transforms
 
 # only resize, scale [-1, 1] and converting to tensor array[h,w,c] -> tensor[c,h,w]
+def new_valid_transforms():
+    transforms = A.Compose([
+        A.PadIfNeeded(min_height=224, min_width=224),        
+        A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
+        ToTensorV2(p=1.0),
+    ], p=1.0)
+    return transforms
+
 def valid_transforms():
     transform = transforms.Compose([
             transforms.ToTensor(),
@@ -522,10 +530,10 @@ class ISIC19Dataset(Dataset):
 
         if self.transform:
             # x = np.transpose(x.numpy(), (1,2,0)) #ToTensorV2 change[h,w,c] -> [c,h,w], revert the change
-            x = self.transform(x)
-            # image = {"image": x}
-            # image = self.transform(**image)["image"]
-            # x=image
+            # x = self.transform(x)
+            image = {"image": x}
+            image = self.transform(**image)["image"]
+            x=image
                 
 
         return x,y

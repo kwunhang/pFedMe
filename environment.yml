@@ -1,0 +1,21 @@
+name: FYP
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - numpy
+  - pandas
+  - scipy
+  - Pillow
+  - matplotlib
+  - tqdm
+  - python=3.11.0
+  - python-dotenv
+  - pytorch==2.0.1
+  - torchvision==0.15.2 
+  - torchaudio==2.0.2
+  - pytorch-cuda=11.7 
+  - albumentations
+  - h5py
