@@ -155,12 +155,12 @@ def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, pred
         
         plt.xticks(rotation=45)
         
-    plt.tight_layout()
-    plt.legend()
-    
-    plt.savefig(fname=os.path.join(plot_path,f"{metric}_comparison_{pm_steps}.png"))
-    
-    plt.show()
+        plt.tight_layout()
+        plt.legend()
+        
+        plt.savefig(fname=os.path.join(plot_path,f"{metric}_comparison_{pm_steps}.png"))
+        
+        plt.show()
 
 def plot_train_results(h5_path, model_name):
     with h5py.File(h5_path, 'r') as hf:
