@@ -237,31 +237,31 @@ if __name__ == "__main__":
     predicted_labels_list = []
     client_labels_list = []
     
-for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one], args.algorithms):
-    if len(analysis_files) > 0:
-        client_labels,true_labels, predicted_labels = collect_data(
-            dataset=args.dataset,
-            algorithm=algorithm,
-            model=args.model,
-            batch_size=args.batch_size,
-            learning_rate=args.learning_rate,
-            beta=args.beta, 
-            lamda=args.lamda,
-            num_glob_iters=args.num_global_iters,
-            local_iters=args.local_iters,
-            optimizer=args.optimizer,
-            numusers=args.numusers,
-            K=args.K,
-            personal_learning_rate=args.personal_learning_rate,
-            times=args.times,
-            gpu=args.gpu,
-            analysis_files=analysis_files,
-            pm_steps=args.pm_steps
-        )
+    for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one], args.algorithms):
+        if len(analysis_files) > 0:
+            client_labels,true_labels, predicted_labels = collect_data(
+                dataset=args.dataset,
+                algorithm=algorithm,
+                model=args.model,
+                batch_size=args.batch_size,
+                learning_rate=args.learning_rate,
+                beta=args.beta, 
+                lamda=args.lamda,
+                num_glob_iters=args.num_global_iters,
+                local_iters=args.local_iters,
+                optimizer=args.optimizer,
+                numusers=args.numusers,
+                K=args.K,
+                personal_learning_rate=args.personal_learning_rate,
+                times=args.times,
+                gpu=args.gpu,
+                analysis_files=analysis_files,
+                pm_steps=args.pm_steps
+            )
 
-    # Append the results to their respective lists
-    true_labels_list.append(true_labels)
-    predicted_labels_list.append(predicted_labels)
-    client_labels_list.append(client_labels)
+        # Append the results to their respective lists
+        true_labels_list.append(true_labels)
+        predicted_labels_list.append(predicted_labels)
+        client_labels_list.append(client_labels)
 
     compare_different_PRF_Algo(args.algorithms, client_labels_list, true_labels_list, predicted_labels_list, args.pm_steps)
