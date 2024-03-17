@@ -374,7 +374,7 @@ def read_user_data(index,data,dataset):
         train_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_train, y_train)]
         test_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_test, y_test)]
         train_data = ISIC19Dataset(train_data, transform=new_train_transforms())
-        test_data = ISIC19Dataset(test_data, transform=valid_transforms())
+        test_data = ISIC19Dataset(test_data, transform=new_valid_transforms())
         print("print sample")
         print(train_data.get_sample)
     else:
