@@ -533,7 +533,7 @@ class ISIC19Dataset(Dataset):
             
             # x = self.transform(x)
             
-            image = np.array(image)
+            x = np.array(x)
             image = {"image": x}
             image = self.transform(**image)["image"]
             x=image

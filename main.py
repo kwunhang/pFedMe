@@ -70,6 +70,20 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
             model = resnet50.to(device), model
             # model = torchvision.models.resnet50(weights='IMAGENET1K_V1').to(device), model
+        if(model == "resnet50_v2"):
+            # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
+            resnet50 = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
+            num_ftrs = resnet50.fc.in_features
+            # freeze the pretrained weight
+            for param in resnet50.parameters():
+                param.requires_grad = False
+            resnet50.fc = nn.Sequential(
+                nn.Linear(num_ftrs, 512),
+                nn.Linear(512, 64),
+                nn.Linear(64, 8),
+                nn.LogSoftmax(dim=1))
+            model = resnet50.to(device), model
+            # model = torchvision.models.resnet50(weights='IMAGENET1K_V1').to(device), model
 
         # select algorithm
         if(algorithm == "FedAvg"):
@@ -134,7 +148,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw"])
-    parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn", "cnn_nBN", "resnet50"])
+    parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn", "cnn_nBN", "resnet50", "resnet50_v2"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
