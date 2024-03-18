@@ -213,6 +213,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpu", type=int, default=0, help="Which GPU to run the experiments, -1 mean CPU, 0,1,2 for GPU")
     parser.add_argument("--analysis_files", nargs='+', default=[""])
     parser.add_argument("--analysis_files_algorithm_one", nargs='+', default=[""])
+    parser.add_argument("--analysis_files_algorithm_two", nargs='+', default=[""])
     parser.add_argument("--pm_steps", type=str, default="Global Model")
     args = parser.parse_args()
 
@@ -230,6 +231,7 @@ if __name__ == "__main__":
     print("=" * 80)
     print("analysis_files       : {}".format(args.analysis_files))
     print("analysis_files_algorithm_one       : {}".format(args.analysis_files_algorithm_one))
+    print("analysis_files_algorithm_two       : {}".format(args.analysis_files_algorithm_two))
     print("pm_steps: {}".format(args.pm_steps))
     
     
@@ -237,7 +239,7 @@ if __name__ == "__main__":
     predicted_labels_list = []
     client_labels_list = []
     
-    for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one], args.algorithms):
+    for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one, args.analysis_files_algorithm_two], args.algorithms):
         if len(analysis_files) > 0:
             client_labels,true_labels, predicted_labels = collect_data(
                 dataset=args.dataset,
