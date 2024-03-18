@@ -161,7 +161,7 @@ def get_pm10_modal_labels(algorithm, server):
 
 
 def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files, pm_steps):
     true_labels_list = []
     predicted_labels_list = []
     client_labels = []
@@ -184,6 +184,7 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
             times = times,
             gpu=gpu,
             analysis_file = analysis_files[i],
+            pm_steps = pm_steps
         )
         true_labels_list.append(true_labels)
         predicted_labels_list.append(predicted_labels)
