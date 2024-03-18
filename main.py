@@ -79,7 +79,11 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 param.requires_grad = False
             resnet50.fc = nn.Sequential(
                 nn.Linear(num_ftrs, 512),
+                nn.ReLU(True),
+                nn.Dropout(0.5),
                 nn.Linear(512, 64),
+                nn.ReLU(True),
+                nn.Dropout(0.5),
                 nn.Linear(64, 8),
                 nn.LogSoftmax(dim=1))
             model = resnet50.to(device), model
