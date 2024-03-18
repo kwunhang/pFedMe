@@ -25,7 +25,7 @@ load_dotenv()
 cpu = torch.device('cpu')
 
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file, pm_steps):
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
     print("device:", device)
     if(model == "mclr"):
@@ -77,7 +77,6 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "FedSelf"):
         server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
 
-
     # global model 
     assert (os.path.exists(path))
     
@@ -90,26 +89,32 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         graph_name = graph_name+"_"+"silo"
     elif("fed" in analysis_file):
         graph_name = graph_name+"_"+"fed"
-        
-        
-    for user in server.users:
-        user_id = user.id  # Replace with the actual attribute name for the user id in your User class
-        model_path = f"models/{dataset}/{algorithm}_user_{user_id}.pt"
-        assert os.path.exists(model_path), f"Model file does not exist: {model_path}"
-        user.model = torch.load(model_path)
-        user.model = user.model.to(device)
 
-        # Calculate performance metrics using the user's model
-        true_label, predict_label = get_user_modal_labels(user)
+    # server.model.load_state_dict(torch.load(path))
+    server.model = torch.load(path)
+    server.model = server.model.to(device)
+
+
+    if(pm_steps == "pm1"):
+        true_label, predict_label = get_pm1_modal_labels(algorithm, server)
+    elif(pm_steps == "pm5"):
+        true_label, predict_label = get_pm5_modal_labels(algorithm, server)
+    elif(pm_steps == "pm10"):
+        true_label, predict_label = get_pm10_modal_labels(algorithm, server)
+    else:
+        true_label, predict_label = get_global_modal_labels(server)
     
     return true_label, predict_label
    
-def get_user_modal_labels(user):    
-    # for user modal 
-    user.send_parameters()
-    user.update_user_BN()
+
+def get_global_modal_labels(server):
+    # for global modal 
+    server.send_parameters()
+    server.update_server_BN()
+    # server.update_user_BN() expect the user BN is saved
+    server.aggregate_parameters()
     
-    true_label, predict_label = user.test_and_get_label()
+    true_label, predict_label = server.test_and_get_label()
     return true_label, predict_label
     
 def get_pm1_modal_labels(algorithm, server):
@@ -208,6 +213,7 @@ if __name__ == "__main__":
     parser.add_argument("--analysis_files", nargs='+', default=[""])
     parser.add_argument("--analysis_files_algorithm_one", nargs='+', default=[""])
     parser.add_argument("--analysis_files_algorithm_two", nargs='+', default=[""])
+    parser.add_argument("--pm_steps", type=str, default="Global Model")
     args = parser.parse_args()
 
     print("=" * 80)
@@ -225,6 +231,7 @@ if __name__ == "__main__":
     print("analysis_files       : {}".format(args.analysis_files))
     print("analysis_files_algorithm_one       : {}".format(args.analysis_files_algorithm_one))
     print("analysis_files_algorithm_two       : {}".format(args.analysis_files_algorithm_two))
+    print("pm_steps: {}".format(args.pm_steps))
     
     
     true_labels_list = []
@@ -250,6 +257,7 @@ if __name__ == "__main__":
                 times=args.times,
                 gpu=args.gpu,
                 analysis_files=analysis_files,
+                pm_steps=args.pm_steps
             )
 
         # Append the results to their respective lists
