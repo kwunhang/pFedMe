@@ -65,14 +65,14 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 model = ResNet18_isic19(8).to(device), model
         if(model == "resnet50"):
             # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
-            resnet50 = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
+            resnet50 = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
             num_ftrs = resnet50.fc.in_features
             resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
             model = resnet50.to(device), model
             # model = torchvision.models.resnet50(weights='IMAGENET1K_V1').to(device), model
         if(model == "resnet50_v2"):
             # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
-            resnet50 = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
+            resnet50 = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
             num_ftrs = resnet50.fc.in_features
             # freeze the pretrained weight
             for param in resnet50.parameters():
