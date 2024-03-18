@@ -99,6 +99,8 @@ class FedSelf(Server):
         self.rs_train_acc.append(train_acc)
         self.rs_train_loss.append(train_loss)
         # print("stats_train[1]",stats_train[3][0])
+        if (max(self.rs_glob_acc) == glob_acc):
+            self.save_best= True
         last_best = self.rs_glob_acc[::-1].index(max(self.rs_glob_acc))
         if(last_best >= 30):
             print(f"!!!! There is already {last_best} round no improvemnt!")
