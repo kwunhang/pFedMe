@@ -12,7 +12,7 @@ from FLAlgorithms.servers.serverself import FedSelf
 from FLAlgorithms.trainmodel.models import *
 from utils.plot_utils import *
 import torch
-from analysis_utils import compare_different_PRF
+from analysis_utils import compare_different_PRF_Algo
 
 import argparse
 torch.manual_seed(0)
@@ -23,7 +23,7 @@ load_dotenv()
 
 
 cpu = torch.device('cpu')
-    
+
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file, pm_steps):
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
@@ -90,8 +90,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     elif("fed" in analysis_file):
         graph_name = graph_name+"_"+"fed"
 
-    server.model.load_state_dict(torch.load(path))
-    # server.model = torch.load(path)
+    # server.model.load_state_dict(torch.load(path))
+    server.model = torch.load(path)
     server.model = server.model.to(device)
 
 
@@ -160,6 +160,40 @@ def get_pm10_modal_labels(algorithm, server):
     return true_label, predict_label
 
 
+def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files, pm_steps):
+    true_labels_list = []
+    predicted_labels_list = []
+    client_labels = []
+    for i in range(len(analysis_files)):
+        
+        true_labels, predicted_labels = analyse(
+            dataset=dataset,
+            algorithm = algorithm,
+            model=model,
+            batch_size=batch_size,
+            learning_rate=learning_rate,
+            beta = beta, 
+            lamda = lamda,
+            num_glob_iters=num_glob_iters,
+            local_iters=local_iters,
+            optimizer= optimizer,
+            numusers = numusers,
+            K=K,
+            personal_learning_rate=personal_learning_rate,
+            times = times,
+            gpu=gpu,
+            analysis_file = analysis_files[i],
+            pm_steps = pm_steps
+        )
+        true_labels_list.append(true_labels)
+        predicted_labels_list.append(predicted_labels)
+        filename, extension = os.path.splitext(analysis_files[i])
+        client_labels.append(filename)
+
+    return client_labels, true_labels_list, predicted_labels_list
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw"])
@@ -171,21 +205,23 @@ if __name__ == "__main__":
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithms", nargs='+', default=["pFedMe"],choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
+    parser.add_argument("--algorithms", nargs='+', default=["pFedMe"], choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
     parser.add_argument("--times", type=int, default=5, help="running time")
     parser.add_argument("--gpu", type=int, default=0, help="Which GPU to run the experiments, -1 mean CPU, 0,1,2 for GPU")
     parser.add_argument("--analysis_files", nargs='+', default=[""])
+    parser.add_argument("--analysis_files_algorithm_one", nargs='+', default=[""])
+    parser.add_argument("--analysis_files_algorithm_two", nargs='+', default=[""])
     parser.add_argument("--pm_steps", type=str, default="Global Model")
     args = parser.parse_args()
 
     print("=" * 80)
     print("Summary of training process:")
-    print("Algorithm: {}".format(args.algorithms))
+    print("Algorithms: {}".format(args.algorithms))
     print("Batch size: {}".format(args.batch_size))
-    print("Learing rate       : {}".format(args.learning_rate))
+    print("Learning rate       : {}".format(args.learning_rate))
     print("Average Moving       : {}".format(args.beta))
     print("Subset of users      : {}".format(args.numusers))
     print("Number of global rounds       : {}".format(args.num_global_iters))
@@ -194,34 +230,40 @@ if __name__ == "__main__":
     print("Local Model       : {}".format(args.model))
     print("=" * 80)
     print("analysis_files       : {}".format(args.analysis_files))
+    print("analysis_files_algorithm_one       : {}".format(args.analysis_files_algorithm_one))
+    print("analysis_files_algorithm_two       : {}".format(args.analysis_files_algorithm_two))
     print("pm_steps: {}".format(args.pm_steps))
     
     
     true_labels_list = []
     predicted_labels_list = []
+    client_labels_list = []
     
-    for i in range(len(args.algorithms)):
-        
-        true_labels, predicted_labels = analyse(
-            dataset=args.dataset,
-            algorithm = args.algorithms[i],
-            model=args.model,
-            batch_size=args.batch_size,
-            learning_rate=args.learning_rate,
-            beta = args.beta, 
-            lamda = args.lamda,
-            num_glob_iters=args.num_global_iters,
-            local_iters=args.local_iters,
-            optimizer= args.optimizer,
-            numusers = args.numusers,
-            K=args.K,
-            personal_learning_rate=args.personal_learning_rate,
-            times = args.times,
-            gpu=args.gpu,
-            analysis_file = args.analysis_files[i],
-            pm_steps = args.pm_steps
-        )
+    for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one, args.analysis_files_algorithm_two], args.algorithms):
+        if len(analysis_files) > 0:
+            client_labels,true_labels, predicted_labels = collect_data(
+                dataset=args.dataset,
+                algorithm=algorithm,
+                model=args.model,
+                batch_size=args.batch_size,
+                learning_rate=args.learning_rate,
+                beta=args.beta, 
+                lamda=args.lamda,
+                num_glob_iters=args.num_global_iters,
+                local_iters=args.local_iters,
+                optimizer=args.optimizer,
+                numusers=args.numusers,
+                K=args.K,
+                personal_learning_rate=args.personal_learning_rate,
+                times=args.times,
+                gpu=args.gpu,
+                analysis_files=analysis_files,
+                pm_steps=args.pm_steps
+            )
+
+        # Append the results to their respective lists
         true_labels_list.append(true_labels)
         predicted_labels_list.append(predicted_labels)
+        client_labels_list.append(client_labels)
 
-    compare_different_PRF(args.algorithms, true_labels_list, predicted_labels_list, args.pm_steps)
+    compare_different_PRF_Algo(args.algorithms, client_labels_list, true_labels_list, predicted_labels_list, args.pm_steps)

@@ -120,6 +120,52 @@ def compare_different_PRF(client_labels, true_labels_list, predicted_labels_list
         plt.savefig(fname=os.path.join(plot_path, f"{metric}_comparison_{pm_steps}.png"))
         plt.show()
 
+def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, predicted_labels_list, pm_steps="Global Model"):
+    # Flatten the list of client_labels and remove duplicates
+    client_labels = list(set(['_'.join(item.split('_')[2:]) for sublist in client_labels for item in sublist]))
+    # client_labels = list(set(['_'.join(item.split('_')[1:3]) for sublist in client_labels for item in sublist]))
+    performance_metrics = {alg: {client: {'precision': [], 'recall': [], 'f1': []} for client in client_labels} for alg in algorithms}
+
+    for algorithm, true_labels_list_alg, predicted_labels_list_alg in zip(algorithms, true_labels_list, predicted_labels_list):
+        for client_label, true_labels, predicted_labels in zip(client_labels,true_labels_list_alg,predicted_labels_list_alg):
+            precision = precision_score(true_labels,predicted_labels,average='macro')
+            recall = recall_score(true_labels,predicted_labels,average='macro')
+            f1 = f1_score(true_labels,predicted_labels,average='macro')
+
+            performance_metrics[algorithm][client_label]['precision'].append(precision)
+            performance_metrics[algorithm][client_label]['recall'].append(recall)
+            performance_metrics[algorithm][client_label]['f1'].append(f1)
+
+    plot_path = os.getenv('SAVE_PLOT_PATH', "/kaggle/working/pFedMe/cifar_plot")
+    if not os.path.exists(plot_path):
+        os.makedirs(plot_path)
+
+    metrics = ['precision', 'recall', 'f1']
+    for metric in metrics:
+        fig, ax = plt.subplots(figsize=(12,len(algorithms)*6))
+        bar_width=0.15
+        index=np.arange(len(client_labels))
+
+        # Create labels based on the number of algorithms
+        labels = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')[:len(algorithms)]
+
+        for i,(algorithm,label) in enumerate(zip(algorithms, labels)):
+            scores=[np.mean(performance_metrics[algorithm][client][metric])for client in client_labels]
+            ax.bar(index+i*bar_width,scores,width=bar_width,label=f'{label}-{algorithm}')
+
+        ax.set_ylabel('Scores')
+        ax.set_title(f'{metric.capitalize()} Score by Model - {pm_steps}')
+        ax.set_xticks(index + bar_width / 2)
+        ax.set_xticklabels(client_labels)
+        
+        plt.xticks(rotation=45)
+        
+        plt.tight_layout()
+        plt.legend()
+        
+        plt.savefig(fname=os.path.join(plot_path,f"{metric}_comparison_{pm_steps}.png"))
+        
+        plt.show()
 def plot_train_results(h5_path, model_name):
     with h5py.File(h5_path, 'r') as hf:
         # Load the data from the h5 file using the keys
