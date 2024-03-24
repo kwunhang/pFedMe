@@ -225,6 +225,8 @@ if __name__ == "__main__":
     parser.add_argument("--analysis_files", nargs='+', default=[""])
     parser.add_argument("--analysis_files_algorithm_one", nargs='+', default=[""])
     parser.add_argument("--analysis_files_algorithm_two", nargs='+', default=[""])
+    parser.add_argument("--analysis_files_algorithm_three", nargs='+', default=[""])
+    parser.add_argument("--analysis_files_algorithm_four", nargs='+', default=[""])
     parser.add_argument("--pm_steps", type=str, default="Global Model")
     args = parser.parse_args()
 
@@ -243,6 +245,8 @@ if __name__ == "__main__":
     print("analysis_files       : {}".format(args.analysis_files))
     print("analysis_files_algorithm_one       : {}".format(args.analysis_files_algorithm_one))
     print("analysis_files_algorithm_two       : {}".format(args.analysis_files_algorithm_two))
+    print("analysis_files_algorithm_three       : {}".format(args.analysis_files_algorithm_three))
+    print("analysis_files_algorithm_four       : {}".format(args.analysis_files_algorithm_four))
     print("pm_steps: {}".format(args.pm_steps))
     
     
@@ -250,7 +254,21 @@ if __name__ == "__main__":
     predicted_labels_list = []
     client_labels_list = []
     
-    for analysis_files, algorithm in zip([args.analysis_files, args.analysis_files_algorithm_one, args.analysis_files_algorithm_two], args.algorithms):
+    zip_list = []
+    if(len(args.analysis_files) > 0):
+        zip_list.append(args.analysis_files)
+    if(len(args.analysis_files_algorithm_one) > 0):
+        zip_list.append(args.analysis_files_algorithm_one)
+    if(len(args.analysis_files_algorithm_two) > 0):
+        zip_list.append(args.analysis_files_algorithm_two)
+    if(len(args.analysis_files_algorithm_three) > 0):
+        zip_list.append(args.analysis_files_algorithm_three)
+    if(len(args.analysis_files_algorithm_four) > 0):
+        zip_list.append(args.analysis_files_algorithm_four)
+    
+    
+    
+    for analysis_files, algorithm in zip(zip_list, args.algorithms):
         if len(analysis_files) > 0:
             client_labels,true_labels, predicted_labels = collect_data(
                 dataset=args.dataset,
