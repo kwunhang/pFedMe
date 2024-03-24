@@ -93,8 +93,19 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     # server.model.load_state_dict(torch.load(path))
     server.model = torch.load(path)
     server.model = server.model.to(device)
-
-
+    
+    if(dataset == "ISIC19_raw"):
+        for user in server.users:
+            user_path = "{}_user_{}.pt".format(algorithm, user.id)
+            if(analysis_file == user_path):
+                path = "models/{}/{}".format(dataset, analysis_file)
+                assert (os.path.exists(path))
+                user.model = torch.load(path)
+                
+                true_label, predict_label = user.test_and_get_label()
+                return true_label, predict_label
+                
+                
     if(pm_steps == "pm1"):
         true_label, predict_label = get_pm1_modal_labels(algorithm, server)
     elif(pm_steps == "pm5"):
