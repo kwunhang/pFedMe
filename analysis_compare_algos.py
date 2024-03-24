@@ -97,9 +97,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(dataset == "ISIC19_raw"):
         for user in server.users:
             user_path = "{}_user_{}.pt".format(algorithm, user.id)
-            # user_path = f"{algorithm}_user_{user.id}.pt"
             if(analysis_file == user_path):
-                path = f"models/{dataset}/{analysis_file}"
+                path = "models/{}/{}".format(dataset, analysis_file)
                 assert (os.path.exists(path))
                 user.model.load_state_dict(torch.load(path))
                 true_label, predict_label = user.test_and_get_label()
