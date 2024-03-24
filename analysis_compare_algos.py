@@ -100,7 +100,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
             if(analysis_file == user_path):
                 path = "models/{}/{}".format(dataset, analysis_file)
                 assert (os.path.exists(path))
-                user.model.load_state_dict(torch.load(path))
+                user.model = torch.load(path)
+                
                 true_label, predict_label = user.test_and_get_label()
                 return true_label, predict_label
                 
