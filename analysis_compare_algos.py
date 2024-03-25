@@ -105,7 +105,7 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
                 true_label, predict_label = user.test_and_get_label()
                 return true_label, predict_label
                 
-                
+    
     if(pm_steps == "pm1"):
         true_label, predict_label = get_pm1_modal_labels(algorithm, server)
     elif(pm_steps == "pm5"):
@@ -114,6 +114,12 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         true_label, predict_label = get_pm10_modal_labels(algorithm, server)
     else:
         true_label, predict_label = get_global_modal_labels(server)
+    
+    if(algorithm == "pFedMe"):
+        true_label, predict_label = get_pm5_modal_labels(algorithm, server)
+    if(algorithm == "PerAvg"):
+        true_label, predict_label = get_pm1_modal_labels(algorithm, server)
+
     
     return true_label, predict_label
    
