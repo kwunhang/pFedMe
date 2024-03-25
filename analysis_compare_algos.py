@@ -177,9 +177,12 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
     predicted_labels_list = []
     client_labels = []
     if(algorithm == "pFedMe"):
-        pm_steps = "pm5"
+        pm_steps = "pm5"        
     elif(algorithm == "PerAvg"):
         pm_steps = "pm1"
+    
+    print("algorithm: {}".format(algorithm))
+    print("pm_steps: {}".format(pm_steps))
 
     for i in range(len(analysis_files)):
         
