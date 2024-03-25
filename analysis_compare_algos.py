@@ -115,12 +115,6 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     else:
         true_label, predict_label = get_global_modal_labels(server)
     
-    if(algorithm == "pFedMe"):
-        true_label, predict_label = get_pm5_modal_labels(algorithm, server)
-    if(algorithm == "PerAvg"):
-        true_label, predict_label = get_pm1_modal_labels(algorithm, server)
-
-    
     return true_label, predict_label
    
 
@@ -182,6 +176,11 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
     true_labels_list = []
     predicted_labels_list = []
     client_labels = []
+    if(algorithm == "pFedMe"):
+        pm_steps = "pm5"
+    elif(algorithm == "PerAvg"):
+        pm_steps = "pm1"
+
     for i in range(len(analysis_files)):
         
         true_labels, predicted_labels = analyse(
