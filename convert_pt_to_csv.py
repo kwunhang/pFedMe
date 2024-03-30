@@ -9,10 +9,15 @@ def convert_pt_to_csv(pt_file_path, csv_file_path):
         writer = csv.writer(csv_file)
         header = train_results.keys()
         writer.writerow(header)
-        for values in zip(*train_results.values()):
-            writer.writerow(values)
+        for key in header:
+            values = train_results[key]
+            if values.dim() == 0:  # If values is a scalar
+                values = torch.unsqueeze(values, 0)  # Add an extra dimension
+            for value in zip(*values):
+                writer.writerow(value)
     
     return csv_file_path
+
             
             
             
