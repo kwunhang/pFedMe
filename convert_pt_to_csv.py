@@ -12,11 +12,12 @@ def convert_pt_to_csv(pt_file_path, csv_file_path):
         for key in header:
             values = train_results[key]
             if values.dim() == 0:  # If values is a scalar
-                values = torch.unsqueeze(values, 0)  # Add an extra dimension
+                values = values.reshape(1, -1)  # Reshape it to a 1D tensor
             for value in zip(*values):
                 writer.writerow(value)
     
     return csv_file_path
+
 
             
             
