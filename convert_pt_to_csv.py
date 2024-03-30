@@ -19,13 +19,16 @@ def convert_pt_to_csv(pt_file_path, csv_file_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--analysis_files", nargs='+', default=[""])
+    parser.add_argument("--dataset", default="ISIC2019")
     args = parser.parse_args()
-    print("analysis_files       : {}".format(args.analysis_files))       
+    print("analysis_files       : {}".format(args.analysis_files))      
+    
 
     converted_files = []
     for(i, pt_file_path) in enumerate(args.analysis_files):
-        csv_file_path = pt_file_path.replace(".pt", ".csv")
-        converted_file = convert_pt_to_csv(pt_file_path, csv_file_path)
+        path = "models/{}/{}".format(args.dataset, pt_file_path) 
+        csv_file_path = path.replace(".pt", ".csv")
+        converted_file = convert_pt_to_csv(path, csv_file_path)
         converted_files.append(converted_file)
     
         
