@@ -238,9 +238,9 @@ for epoch in range(1, EPOCHS+1):
     print('epoch:', epoch, '/', EPOCHS,
           '\tvalid loss:', '{:.4f}'.format(cur_valid_loss),
           '\tvalid accuracy', '{:.4f}'.format(valid_accs))
+    best_valid_acc = max(rs_valid_acc)
     rs_valid_acc.append(valid_accs)
     rs_valid_loss.append(cur_valid_loss)
-    best_valid_acc = max(rs_valid_acc)
     
     if valid_accs > best_valid_acc:
         torch.save(model.state_dict(), save_path + checkpoint_path)
