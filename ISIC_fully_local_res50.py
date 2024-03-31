@@ -25,7 +25,7 @@ from analysis_utils import plot_function
 
 load_dotenv()
 
-EPOCHS = 150
+EPOCHS = 300
 learning_rate = 0.001
 batch_size = 128
 save_path = 'ISIC19/fully_res50local_base/'
@@ -231,7 +231,7 @@ for epoch in range(1, EPOCHS+1):
             
             valid_loss.append(loss.item())
             valid_accs += (accuracy)
-    valid_accs /= train_samples
+    valid_accs /= test_samples
     
     cur_valid_loss = np.mean(valid_loss)
         
