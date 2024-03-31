@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# 256 batch size, weight cross entropy loss, adam optimizer
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,7 +29,7 @@ load_dotenv()
 EPOCHS = 300
 learning_rate = 0.001
 batch_size = 256
-save_path = 'ISIC19/fully_res50local_base/'
+save_path = 'ISIC19/fully_res50local_base_v2/'
 checkpoint_path = 'check_point.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device:",device)
@@ -182,7 +183,7 @@ for i in range(8):
     weighting_loss.append(train_samples/(torch.sum(y_train==i).item()))
 
 weighting_loss = torch.tensor(weighting_loss)
-criterion = nn.NLLLoss(weight=weighting_loss)
+criterion = nn.NLLLoss(weight=weighting_loss.to(device))
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 valid_ac = []
@@ -242,7 +243,7 @@ for epoch in range(1, EPOCHS+1):
     print('epoch:', epoch, '/', EPOCHS,
           '\tvalid loss:', '{:.4f}'.format(cur_valid_loss),
           '\tvalid accuracy', '{:.4f}'.format(valid_accs))
-    best_valid_acc = max(rs_valid_acc)
+    best_valid_acc = max(rs_valid_acc) if len(rs_valid_acc) >0 else 0
     rs_valid_acc.append(valid_accs)
     rs_valid_loss.append(cur_valid_loss)
     
@@ -290,7 +291,6 @@ with torch.no_grad():
         images, labels = images.to(device), labels.to(device)
         
         out = model(images)
-        loss = criterion(out, labels)
         
         predict = (torch.argmax(out, dim=1) )
         
