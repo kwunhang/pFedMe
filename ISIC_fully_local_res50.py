@@ -238,7 +238,7 @@ for epoch in range(1, EPOCHS+1):
     print('epoch:', epoch, '/', EPOCHS,
           '\tvalid loss:', '{:.4f}'.format(cur_valid_loss),
           '\tvalid accuracy', '{:.4f}'.format(valid_accs))
-    best_valid_acc = max(rs_valid_acc)
+    best_valid_acc = max(rs_valid_acc) if len(rs_valid_acc) >0 else 0
     rs_valid_acc.append(valid_accs)
     rs_valid_loss.append(cur_valid_loss)
     
