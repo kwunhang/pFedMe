@@ -108,7 +108,7 @@ class User:
                 #print(self.id + ", Test Loss:", loss)
                 
         # print accuracy of each client
-        print(self.id + ", Test Accuracy:", test_acc )
+        print(self.id + ", Test Accuracy:", test_acc / len(true_label))
         return true_label, predict_label
 
     def train_error_and_loss(self):

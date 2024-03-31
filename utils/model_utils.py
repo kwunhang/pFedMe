@@ -399,22 +399,7 @@ def train_transforms():
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
         ])
     return transform
-    # transforms = A.Compose([
-    #     A.RandomBrightnessContrast(
-    #         brightness_limit=0.1, 
-    #         contrast_limit=0.2, brightness_by_max=True, always_apply=False, p=0.5),
-    #     A.OneOf(
-    #                           [A.HorizontalFlip(p=0.5),
-    #                            A.VerticalFlip(p=0.5),
-    #                            A.RandomRotate90(p=0.5),
-    #                            A.Transpose(p=0.5),
-    #                           ], p=0.5),
-    #     A.LongestMaxSize(max_size=224),
-    #     A.PadIfNeeded(min_height=224, min_width=224),
-        
-    #     A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
-    #     ToTensorV2(p=1.0),
-    # ], p=1.0)
+
 def new_train_transforms():
     transforms = A.Compose([
         A.HorizontalFlip(p=0.5),
