@@ -250,12 +250,12 @@ for epoch in range(1, EPOCHS+1):
           '\tvalid accuracy', '{:.4f}'.format(valid_accs))
     best_valid_acc = max(rs_valid_acc) if len(rs_valid_acc) >0 else 0
     best_recall = max(recall_rates) if len(recall_rates) >0 else 0
-    recall_rates.append(best_recall)
+    recall_rates.append(recall)
     rs_valid_acc.append(valid_accs)
     rs_valid_loss.append(cur_valid_loss)
     
     
-    if valid_accs > best_valid_acc:
+    if recall > best_recall:
         torch.save(model.state_dict(), save_path + checkpoint_path)
         print(f'Model weights saved to {save_path}{checkpoint_path}')
     else:
