@@ -18,6 +18,7 @@ from albumentations.pytorch.transforms import ToTensorV2
 def ISIC_raw_train_transforms():
     transforms = A.Compose([
         A.LongestMaxSize(max_size=256),
+        A.PadIfNeeded(min_height=224, min_width=224),
         A.RandomCrop(height=244, width=244),
         A.HorizontalFlip(p=0.5),
         A.Perspective(scale=(0.05, 0.1), keep_size=True, p=0.1),
@@ -43,8 +44,6 @@ def ISIC_raw_train_transforms():
             brightness_limit=0.1, 
             contrast_limit=0.2, brightness_by_max=True, always_apply=False, p=0.5),],p=1.0),
         ], p=0.05),
-
-        A.PadIfNeeded(min_height=224, min_width=224),
         
         A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
         ToTensorV2(p=1.0),
@@ -54,9 +53,8 @@ def ISIC_raw_train_transforms():
 def ISIC_raw_valid_transforms():
     transforms = A.Compose([
         A.LongestMaxSize(max_size=256),
-        A.CenterCrop(height=244, width=244),
-
         A.PadIfNeeded(min_height=224, min_width=224),
+        A.CenterCrop(height=244, width=244),
         
         A.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), max_pixel_value=255.0),
         ToTensorV2(p=1.0),
