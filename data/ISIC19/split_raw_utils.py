@@ -18,10 +18,13 @@ import shutil
 
 pd.set_option('display.max_colwidth', None) 
 
-base_dir = ""
+base_dir = "/research/d2/fyp23/khlau1/"
 source_dir = os.path.join(base_dir, "ISIC19_raw_img")
 output_dir = os.path.join(base_dir, "ISIC19_raw_img_splited")
 image_source_dir = os.path.join(source_dir, "ISIC_2019_Training_Input")
+
+if not os.path.exists(base_dir):
+    print("base_dir is not exist. Please double check")
 
 def seed_everything(seed=42):
     os.environ['PYTHONHASHSEED'] = str(seed) #LYZ:设置 Python 的哈希种子，以确保散列操作的一致性。
@@ -103,12 +106,12 @@ for dir in dir_make:
     for client in clients_set:
         cur_clients_dir = os.path.join(cur_dir, client)
         if not os.path.exists(cur_clients_dir):
-            os.mkdir(cur_clients_dir)
+            os.makedirs(cur_clients_dir)
 
 
 for client, split_data_dict in data_split_result.items():
     for data_type, data_df in split_data_dict.items():
         data_df.to_csv(os.path.join(output_dir, data_type, client, "data_truth.csv"))
         for _, data in data_df.iterrows():
-            shutil.copy(os.path.join(image_source_dir,data["image"]),
+            shutil.copy(os.path.join(image_source_dir,data["image"] + ".jpg"),
                         os.path.join(output_dir, data_type, client))

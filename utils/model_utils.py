@@ -6,16 +6,16 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from tqdm import trange
-import numpy as np
+import pandas as pd
 import random
 from torch.utils.data import Dataset, DataLoader
+from PIL import Image
 
 
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
+from utils.transform_utils import ISIC_raw_train_transforms, ISIC_raw_valid_transforms
 
-
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -248,6 +248,37 @@ def read_data_byClient(dataset):
     
     return clients, train_data, test_data
 
+def read_ISIC_data_byClient(dataset):
+    data_path = os.getenv('DATA_PATH')
+    train_data_dir = os.path.join(data_path,dataset, 'train')
+    test_data_dir = os.path.join(data_path,dataset,'test')
+    
+    clients = []
+    train_data = {}
+    test_data = {}
+    
+    train_clients_dir = os.listdir(train_data_dir)
+    for client in train_clients_dir:
+        data_dir = os.path.join(train_data_dir, client)
+        if not os.path.isdir(data_dir):
+            continue
+        clients.append(client)
+        data_file = os.path.join(data_dir, "data_truth.csv")
+        if not os.path.exists(data_file):
+            print("data_file is not exist!\n",data_file)
+        df = pd.read_csv(data_file)
+        train_data[client] = {"data_dir":data_dir,
+                              "data_df": df
+                              }
+        
+    test_clients_dir = os.listdir(test_data_dir)
+    for client in test_clients_dir:
+        data_dir = os.path.join(test_data_dir, client)
+        if not os.path.isdir(data_dir):
+            continue
+        test_data[client] = data_dir
+    return clients ,train_data, test_data
+
 def read_test_byClient(dataset, folder_name):
     data_path = os.getenv('DATA_PATH')
     if data_path == None or data_path == "":
@@ -300,6 +331,10 @@ def read_data(dataset):
     if(dataset == "Cifar10ByClient" or dataset == "ISIC19" or dataset == "ISIC19_raw"):
         clients, train_data, test_data = read_data_byClient(dataset)
         return clients, [], train_data, test_data
+    
+    if(dataset == "ISIC19_raw_img_splited"):
+        clients, train_data, test_data = read_ISIC_data_byClient(dataset)
+        return clients, [], train_data, test_data
         
 
     train_data_dir = os.path.join('data',dataset,'data', 'train')
@@ -338,10 +373,26 @@ def tensor_to_PIL(tensor):
     image = transforms.ToPILImage(image)
     return image
 
+def read_user_data_ISIC_img(id,train_data,test_data):
+    train_dir, train_df = train_data["data_dir"], train_data["data_df"]
+    test_dir, test_df = test_data["data_dir"], test_data["data_df"]
+    train_data = ISIC19DatasetRawImage(train_dir, train_df, transform=ISIC_raw_train_transforms())
+    test_data = ISIC19DatasetRawImage(test_dir, test_df, transform=ISIC_raw_valid_transforms())
+    print("print sample")
+    print(train_data.get_sample)
+    return id, train_data, test_data
+    
+
 def read_user_data(index,data,dataset):
     id = data[0][index]
     train_data = data[2][id]
     test_data = data[3][id]
+    
+    # special case for data source is raw image
+    if (dataset == "ISIC19_raw_img_splited"):
+        id, train_data, test_data = read_user_data_ISIC_img(id,train_data,test_data)
+        return id, train_data, test_data
+
     X_train, y_train, X_test, y_test = train_data['x'], train_data['y'], test_data['x'], test_data['y']
     if(dataset == "Mnist"):
         X_train, y_train, X_test, y_test = train_data['x'], train_data['y'], test_data['x'], test_data['y']
@@ -533,6 +584,60 @@ class ISIC19Dataset(Dataset):
         x, y = self.data[idx]
 
         return x,y
+    
+    def collate_fn(self, batch):
+        images, labels = list(zip(*batch))
+        images, labels = [[tensor[None] for tensor in subset] for subset in (images, labels)]
+        images, labels = [torch.cat(subset, dim=0) for subset in (images, labels)]
+        return images, labels
+
+class ISIC19DatasetRawImage(Dataset):
+    """ISIC19 raw dataset in tensor (convert from numpy)"""
+
+    def __init__(self, data_dir, data,transform=None):
+        """
+        Arguments:
+            data_dir (string): the path of the directory store
+            data (pd dataframe):
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        self.data_dir = data_dir
+        self.data = data
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        row = self.data.loc[idx].squeeze()
+        
+        image = Image.open(self.data_dir + row["image"] + ".jpg")
+        
+        image = np.array(image)
+
+        label = torch.as_tensor(row["labels"], dtype=torch.int64)
+
+        if self.transform:
+            sample = {"image": image}
+            image = self.transform(**image)["image"]
+
+        return image, label
+    
+    def get_sample(self, idx):
+        row = self.data.loc[idx].squeeze()
+        
+        image = Image.open(self.data_dir + row["image"] + ".jpg")
+        
+        image = np.array(image)
+
+        label = torch.as_tensor(row["labels"], dtype=torch.int64)
+
+        if self.transform:
+            sample = {"image": image}
+            image = self.transform(**image)["image"]
+
+        return image, label
     
     def collate_fn(self, batch):
         images, labels = list(zip(*batch))
