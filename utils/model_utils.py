@@ -276,7 +276,13 @@ def read_ISIC_data_byClient(dataset):
         data_dir = os.path.join(test_data_dir, client)
         if not os.path.isdir(data_dir):
             continue
-        test_data[client] = data_dir
+        data_file = os.path.join(data_dir, "data_truth.csv")
+        if not os.path.exists(data_file):
+            print("data_file is not exist!\n",data_file)
+        df = pd.read_csv(data_file)
+        test_data[client] = {"data_dir":data_dir,
+                              "data_df": df
+                              }
     return clients ,train_data, test_data
 
 def read_test_byClient(dataset, folder_name):
