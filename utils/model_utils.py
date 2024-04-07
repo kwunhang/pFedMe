@@ -618,7 +618,7 @@ class ISIC19DatasetRawImage(Dataset):
     def __getitem__(self, idx):
         row = self.data.loc[idx].squeeze()
         
-        image = Image.open(self.data_dir + row["image"] + ".jpg")
+        image = Image.open(os.path.join(self.data_dir, row["image"] + ".jpg"))
         
         image = np.array(image)
 
@@ -633,7 +633,7 @@ class ISIC19DatasetRawImage(Dataset):
     def get_sample(self, idx):
         row = self.data.loc[idx].squeeze()
         
-        image = Image.open(self.data_dir + row["image"] + ".jpg")
+        image = Image.open(os.path.join(self.data_dir, row["image"] + ".jpg"))
         
         image = np.array(image)
 
