@@ -626,7 +626,7 @@ class ISIC19DatasetRawImage(Dataset):
 
         if self.transform:
             sample = {"image": image}
-            image = self.transform(**image)["image"]
+            image = self.transform(**sample)["image"]
 
         return image, label
     
