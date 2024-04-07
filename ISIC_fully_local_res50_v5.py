@@ -237,8 +237,8 @@ for epoch in range(1, EPOCHS+1):
             pred = torch.argmax(out, dim=1)
             
             accuracy = (torch.sum(pred == labels)).item()
-            recall_func = Recall(task="multiclass", average='macro', num_classes=9)
-            recall = recall_func(pred, labels)
+            recall_func = Recall(task="multiclass", average='macro', num_classes=9).to(device)
+            recall = recall_func(pred.to(device), labels)
             valid_loss.append(loss.item())
             valid_accs += (accuracy)
     valid_accs /= test_samples

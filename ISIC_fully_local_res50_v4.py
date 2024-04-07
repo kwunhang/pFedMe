@@ -29,7 +29,7 @@ load_dotenv()
 EPOCHS = 300
 learning_rate = 0.001
 batch_size = 256
-save_path = 'ISIC19/fully_res50local_base_v2/'
+save_path = 'ISIC19/fully_res50local_base_v4/'
 checkpoint_path = 'check_point.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device:",device)
