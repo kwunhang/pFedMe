@@ -266,10 +266,15 @@ def read_ISIC_data_byClient(dataset):
         data_file = os.path.join(data_dir, "data_truth.csv")
         if not os.path.exists(data_file):
             print("data_file is not exist!\n",data_file)
-        df = pd.read_csv(data_file)
-        train_data[client] = {"data_dir":data_dir,
-                              "data_df": df
-                              }
+        data_df = pd.read_csv(data_file)
+        use_train_data = []
+        for _, row in data_df.iterrows():
+            image = Image.open(os.path.join(data_dir, row["image"] + ".jpg"))
+            image = np.array(image)
+            label = torch.as_tensor(row["labels"], dtype=torch.int64)
+            use_train_data.append((image,label))
+
+        train_data[client] = use_train_data
         
     test_clients_dir = os.listdir(test_data_dir)
     for client in test_clients_dir:
@@ -279,10 +284,15 @@ def read_ISIC_data_byClient(dataset):
         data_file = os.path.join(data_dir, "data_truth.csv")
         if not os.path.exists(data_file):
             print("data_file is not exist!\n",data_file)
-        df = pd.read_csv(data_file)
-        test_data[client] = {"data_dir":data_dir,
-                              "data_df": df
-                              }
+        data_df = pd.read_csv(data_file)
+        use_test_data = []
+        for _, row in data_df.iterrows():
+            image = Image.open(os.path.join(data_dir, row["image"] + ".jpg"))
+            image = np.array(image)
+            label = torch.as_tensor(row["labels"], dtype=torch.int64)
+            use_test_data.append((image,label))
+        
+        test_data[client] = use_test_data
     return clients ,train_data, test_data
 
 def read_test_byClient(dataset, folder_name):
@@ -380,10 +390,8 @@ def tensor_to_PIL(tensor):
     return image
 
 def read_user_data_ISIC_img(id,train_data,test_data):
-    train_dir, train_df = train_data["data_dir"], train_data["data_df"]
-    test_dir, test_df = test_data["data_dir"], test_data["data_df"]
-    train_data = ISIC19DatasetRawImage(train_dir, train_df, transform=ISIC_raw_train_transforms())
-    test_data = ISIC19DatasetRawImage(test_dir, test_df, transform=ISIC_raw_valid_transforms())
+    train_data = ISIC19DatasetRawImage(train_data, transform=ISIC_raw_train_transforms())
+    test_data = ISIC19DatasetRawImage(test_data, transform=ISIC_raw_valid_transforms())
     print("print sample")
     print(train_data.get_sample)
     return id, train_data, test_data
@@ -600,15 +608,13 @@ class ISIC19Dataset(Dataset):
 class ISIC19DatasetRawImage(Dataset):
     """ISIC19 raw dataset in tensor (convert from numpy)"""
 
-    def __init__(self, data_dir, data,transform=None):
+    def __init__(self, data,transform=None):
         """
         Arguments:
-            data_dir (string): the path of the directory store
-            data (pd dataframe):
+            data ():
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
-        self.data_dir = data_dir
         self.data = data
         self.transform = transform
 
@@ -616,13 +622,9 @@ class ISIC19DatasetRawImage(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        row = self.data.loc[idx].squeeze()
-        
-        image = Image.open(os.path.join(self.data_dir, row["image"] + ".jpg"))
-        
-        image = np.array(image)
-
-        label = torch.as_tensor(row["labels"], dtype=torch.int64)
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        image, label = self.data[idx]
 
         if self.transform:
             sample = {"image": image}
@@ -641,7 +643,7 @@ class ISIC19DatasetRawImage(Dataset):
 
         if self.transform:
             sample = {"image": image}
-            image = self.transform(**image)["image"]
+            image = self.transform(**sample)["image"]
 
         return image, label
     
