@@ -64,21 +64,13 @@ model = resnet50.to(device)
 
 dataset = "ISIC19_raw_img_splited"
 _ , _ , train_data_tmp, test_data_tmp = read_data(dataset)
-X_train, y_train, X_test, y_test = [np.array([])]*4
+train_data, test_data = [np.array([])]*2
 for _, data in train_data_tmp.items():
-    X_train = np.append(X_train,data['x'])
-    y_train = np.append(y_train, data['y'])
+    train_data = train_data.extend(data)
+    
+for _, data in train_data_tmp.items():
+    test_data = test_data.extend(data)
 
-for _, data in test_data_tmp.items():
-    X_test = np.append(X_test,data['x'])
-    y_test = np.append(y_test, data['y'])
-# X_train, y_train, X_test, y_test = train_data['x'], train_data['y'], test_data['x'], test_data['y']
-X_train = torch.Tensor(X_train).view(-1, 3, 224, 224).type(torch.float32)
-y_train = torch.Tensor(y_train).type(torch.int64)
-X_test = torch.Tensor(X_test).view(-1, 3, 224, 224).type(torch.float32)
-y_test = torch.Tensor(y_test).type(torch.int64)
-train_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_train, y_train)]
-test_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_test, y_test)]
 train_data = ISIC19DatasetRawImage(train_data, transform=ISIC_raw_train_transforms())
 test_data = ISIC19DatasetRawImage(test_data, transform=ISIC_raw_valid_transforms())
 
@@ -89,6 +81,7 @@ trainloader = DataLoader(train_data, batch_size, shuffle=True, num_workers=2)
 testloader =  DataLoader(test_data, batch_size,num_workers=2)
 
 weighting_loss = []
+y_train = torch.Tensor([y for _,y in train_data]).type(torch.int64)
 for i in range(8):
     weighting_loss.append(train_samples/(torch.sum(y_train==i).item()))
 
