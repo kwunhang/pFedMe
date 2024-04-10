@@ -81,6 +81,7 @@ trainloader = DataLoader(train_data, batch_size, shuffle=True, num_workers=2)
 testloader =  DataLoader(test_data, batch_size,num_workers=2)
 
 weighting_loss = []
+y_train = [y for _,y in train_data]
 for i in range(8):
     weighting_loss.append(train_samples/(torch.sum(y_train==i).item()))
 
