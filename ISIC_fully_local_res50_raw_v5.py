@@ -32,7 +32,7 @@ load_dotenv()
 EPOCHS = 300
 learning_rate = 0.001
 batch_size = 256
-save_path = 'ISIC19/fully_res50local_base_v5/'
+save_path = 'ISIC19/fully_res50local_base_raw_v5/'
 checkpoint_path = 'check_point.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device:",device)
@@ -62,7 +62,7 @@ resnet50.fc = nn.Sequential(
     nn.LogSoftmax(dim=1))
 model = resnet50.to(device)
 
-dataset = "ISIC19_raw"
+dataset = "ISIC19_raw_img_splited"
 _ , _ , train_data_tmp, test_data_tmp = read_data(dataset)
 X_train, y_train, X_test, y_test = [np.array([])]*4
 for _, data in train_data_tmp.items():

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# 256 batch size, weight cross entropy loss, adam optimizer
+# 256 batch size, weight cross entropy loss, adam optimizer, every epoch user best model
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,7 +31,7 @@ load_dotenv()
 EPOCHS = 300
 learning_rate = 0.001
 batch_size = 256
-save_path = 'ISIC19/fully_res50local_base_raw_v2/'
+save_path = 'ISIC19/fully_res50local_base_raw_v4/'
 checkpoint_path = 'check_point.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device:",device)
@@ -43,7 +43,6 @@ if not(base_path == None or base_path == ""):
 print(save_path)
 if not os.path.exists(save_path):
     os.makedirs(save_path)
-
 
 
 resnet50 = torch.hub.load("pytorch/vision", "resnet50", weights="IMAGENET1K_V2")
@@ -161,6 +160,8 @@ for epoch in range(1, EPOCHS+1):
     if valid_accs > best_valid_acc:
         torch.save(model.state_dict(), save_path + checkpoint_path)
         print(f'Model weights saved to {save_path}{checkpoint_path}')
+    else:
+        model.load_state_dict(torch.load(save_path + checkpoint_path))
         
 # save result of acc and loss
 if not os.path.exists(save_path+ 'result/'):
@@ -174,6 +175,7 @@ with h5py.File(save_path+ 'result/' +'result.h5', 'w') as hf:
     hf.close()
     
 # plot graph
+model.load_state_dict(torch.load(save_path + checkpoint_path))
 data = read_test_byClient(dataset, "final_test")
 _ , _ , _, test_data_tmp = read_data(dataset)
 X_test, y_test = [np.array([])]*2
@@ -183,7 +185,7 @@ for _, data in test_data_tmp.items():
 X_test = torch.Tensor(X_test).view(-1, 3, 224, 224).type(torch.float32)
 y_test = torch.Tensor(y_test).type(torch.int64)
 test_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_test, y_test)]
-test_data = ISIC_raw_valid_transforms(test_data, transform=ISIC_raw_valid_transforms())
+test_data = ISIC19DatasetRawImage(test_data, transform=ISIC_raw_valid_transforms())
 
 test_samples = len(test_data)
 
