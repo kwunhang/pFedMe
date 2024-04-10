@@ -63,7 +63,7 @@ model = resnet50.to(device)
 
 dataset = "ISIC19_raw_img_splited"
 _ , _ , train_data_tmp, test_data_tmp = read_data(dataset)
-train_data, test_data = [np.array([])]*2
+train_data, test_data = [[]]*2
 for _, data in train_data_tmp.items():
     train_data = train_data.extend(data)
     
