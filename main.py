@@ -15,7 +15,7 @@ from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.servers.serverself import FedSelf
 from FLAlgorithms.servers.serverIncFL import IncFL
 from FLAlgorithms.trainmodel.models import *
-from utils.model_utils import read_test_byClient, read_user_data
+from utils.model_utils import read_test_byClient, read_user_data, read_ISIC_data_byClient
 from utils.plot_utils import *
 import torch
 import torchvision
@@ -121,13 +121,16 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         server.test()
                 
         # plot graph after training
-        if(dataset== "ISIC19_raw"):
+        if(dataset == "ISIC19_raw" or dataset == "ISIC19_raw_img_splited"):
             # use the best model
             
             server.load_all_model()
             
             # load the real test set
-            data = read_test_byClient(dataset, "final_test")
+            if dataset == "ISIC19_raw":
+                data = read_test_byClient(dataset, "final_test")
+            elif dataset == "ISIC19_raw_img_splited":
+                data = read_ISIC_data_byClient(dataset, "final_test")
             total_users = len(data[0])
             for i in range(total_users):
                 uid, train , test = read_user_data(i, data, dataset)

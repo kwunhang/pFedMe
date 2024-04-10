@@ -248,10 +248,10 @@ def read_data_byClient(dataset):
     
     return clients, train_data, test_data
 
-def read_ISIC_data_byClient(dataset):
+def read_ISIC_data_byClient(dataset, test="test"):
     data_path = os.getenv('DATA_PATH')
     train_data_dir = os.path.join(data_path,dataset, 'train')
-    test_data_dir = os.path.join(data_path,dataset,'test')
+    test_data_dir = os.path.join(data_path,dataset, test)
     
     clients = []
     train_data = {}
