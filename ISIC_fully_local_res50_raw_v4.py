@@ -65,10 +65,10 @@ dataset = "ISIC19_raw_img_splited"
 _ , _ , train_data_tmp, test_data_tmp = read_data(dataset)
 train_data, test_data = [],[]
 for _, data in train_data_tmp.items():
-    train_data = train_data.extend(data)
+    train_data.extend(data)
     
 for _, data in train_data_tmp.items():
-    test_data = test_data.extend(data)
+    test_data.extend(data)
 
 train_data = ISIC19DatasetRawImage(train_data, transform=ISIC_raw_train_transforms())
 test_data = ISIC19DatasetRawImage(test_data, transform=ISIC_raw_valid_transforms())
