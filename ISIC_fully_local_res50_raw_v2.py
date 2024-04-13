@@ -68,7 +68,7 @@ train_data, test_data = [],[]
 for _, data in train_data_tmp.items():
     train_data.extend(data)
     
-for _, data in train_data_tmp.items():
+for _, data in test_data_tmp.items():
     test_data.extend(data)
 
 train_data = ISIC19DatasetRawImage(train_data, transform=ISIC_raw_train_transforms())
@@ -167,16 +167,15 @@ with h5py.File(save_path+ 'result/' +'result.h5', 'w') as hf:
     hf.close()
     
 # plot graph
-data = read_test_byClient(dataset, "final_test")
-_ , _ , _, test_data_tmp = read_data(dataset)
-X_test, y_test = [np.array([])]*2
+model.load_state_dict(torch.load(save_path + checkpoint_path))
+_ , _ , train_data_tmp, test_data_tmp = read_test_byClient(dataset, "final_test")
+
+test_data = []
+    
 for _, data in test_data_tmp.items():
-    X_test = np.append(X_test,data['x'])
-    y_test = np.append(y_test, data['y'])
-X_test = torch.Tensor(X_test).view(-1, 3, 224, 224).type(torch.float32)
-y_test = torch.Tensor(y_test).type(torch.int64)
-test_data = [(transforms.ToPILImage()(x), y) for x, y in zip(X_test, y_test)]
-test_data = ISIC_raw_valid_transforms(test_data, transform=ISIC_raw_valid_transforms())
+    test_data.extend(data)
+
+test_data = ISIC19DatasetRawImage(test_data, transform=ISIC_raw_valid_transforms())
 
 test_samples = len(test_data)
 
