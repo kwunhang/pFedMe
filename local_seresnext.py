@@ -141,7 +141,7 @@ class ISIC19Dataset(Dataset):
         return images, labels
 
 seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
-num_ftrs = seResNext.fc.in_features
+num_ftrs = seResNext.last_linear.in_features
 # freeze the pretrained weight
 for param in seResNext.parameters():
     param.requires_grad = False
