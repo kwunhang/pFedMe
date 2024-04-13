@@ -23,6 +23,9 @@ from dotenv import load_dotenv
 from tqdm.notebook import tqdm
 from analysis_utils import plot_function
 import pretrainedmodels
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 load_dotenv()
