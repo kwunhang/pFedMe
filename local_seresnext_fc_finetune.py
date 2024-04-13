@@ -26,6 +26,7 @@ from utils.transform_utils import ISIC_raw_train_transforms, ISIC_raw_valid_tran
 from utils.model_utils import ISIC19DatasetRawImage
 import pretrainedmodels
 import ssl
+import gc
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -36,7 +37,7 @@ FC_EPOCHS = 10
 FINE_TUNE_EPOCHS = 150
 learning_rate = 0.0001
 last_learning_rate = 0.00001
-batch_size = 128
+batch_size = 64
 save_path = 'ISIC19/se_resnext_fc_finetune/'
 checkpoint_path = 'check_point.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -161,6 +162,8 @@ for epoch in range(1, FC_EPOCHS+1):
         print(f'Model weights saved to {save_path}{checkpoint_path}')
 
 # fine tune whole model after trained the fc
+gc.collect()
+torch.cuda.empty_cache()
 model.load_state_dict(torch.load(save_path + checkpoint_path))
 
 for param in model.parameters():

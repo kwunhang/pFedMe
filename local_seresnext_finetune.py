@@ -26,6 +26,7 @@ from utils.transform_utils import ISIC_raw_train_transforms, ISIC_raw_valid_tran
 from utils.model_utils import ISIC19DatasetRawImage
 import pretrainedmodels
 import ssl
+import gc
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -94,6 +95,8 @@ valid_ac = []
 best_valid_acc = 0
 rs_train_accs, rs_train_loss, rs_valid_acc, rs_valid_loss = [],[],[],[]
 
+gc.collect()
+torch.cuda.empty_cache()
 for epoch in range(1, EPOCHS+1):
     time_1 = time.time()
     train_loss, train_accs = [], 0
