@@ -30,7 +30,7 @@ os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
 EPOCHS = 150
 learning_rate = 0.0001
 batch_size = 256
-save_path = 'ISIC19/se_resnext_v2/'
+save_path = 'ISIC19/se_resnext_fc/'
 checkpoint_path = 'check_point.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device:",device)
