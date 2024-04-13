@@ -296,6 +296,9 @@ def read_ISIC_data_byClient(dataset, test="test"):
     return clients ,train_data, test_data
 
 def read_test_byClient(dataset, folder_name):
+    if dataset == "ISIC19_raw_img_splited":
+        data = read_ISIC_data_byClient(dataset, "final_test")
+        return data
     data_path = os.getenv('DATA_PATH')
     if data_path == None or data_path == "":
         data_path = 'data'
