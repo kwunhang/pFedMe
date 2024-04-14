@@ -19,6 +19,9 @@ from utils.model_utils import read_test_byClient, read_user_data, read_ISIC_data
 from utils.plot_utils import *
 import torch
 import torchvision
+import pretrainedmodels
+import ssl
+
 torch.manual_seed(0)
 random.seed(0)
 
@@ -88,6 +91,21 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 nn.LogSoftmax(dim=1))
             model = resnet50.to(device), model
             # model = torchvision.models.resnet50(weights='IMAGENET1K_V1').to(device), model
+        # model = torch.hub.load("pytorch/vision", "efficientnet_b3", weights="IMAGENET1K_V1")
+        if(model == "se_resnext50"):
+            ssl._create_default_https_context = ssl._create_unverified_context
+            seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
+            num_ftrs = seResNext.fc.in_features
+            # freeze the pretrained weight
+            for param in seResNext.parameters():
+                param.requires_grad = False
+            seResNext.last_linear = nn.Sequential(
+                nn.Linear(num_ftrs, 512),
+                nn.ReLU(True),
+                nn.Dropout(0.5),
+                nn.Linear(512, 8),
+                nn.LogSoftmax(dim=1))
+            model = resnet50.to(device), model
 
         # select algorithm
         if(algorithm == "FedAvg"):
