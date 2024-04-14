@@ -93,6 +93,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             # model = torchvision.models.resnet50(weights='IMAGENET1K_V1').to(device), model
         # model = torch.hub.load("pytorch/vision", "efficientnet_b3", weights="IMAGENET1K_V1")
         if(model == "se_resnext50"):
+            os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
             ssl._create_default_https_context = ssl._create_unverified_context
             seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
             num_ftrs = seResNext.se_resnext50.in_features
