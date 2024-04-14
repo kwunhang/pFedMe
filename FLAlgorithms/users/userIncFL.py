@@ -27,7 +27,9 @@ class UserIncFL(User):
             weighting_loss = []
             y_train = torch.Tensor([y for _,y in train_data]).type(torch.int64)
             for i in range(8):
-                weighting_loss.append(len(train_data)/(torch.sum(y_train==i).item()))
+                num_i = torch.sum(y_train==i).item()
+                weight = len(train_data)/(torch.sum(y_train==i).item()) if num_i != 0 else 1
+                weighting_loss.append(weight)
             weighting_loss = torch.tensor(weighting_loss)
             self.loss = nn.NLLLoss(weight=weighting_loss.to(device))
         else:
