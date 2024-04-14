@@ -95,7 +95,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         if(model == "se_resnext50"):
             ssl._create_default_https_context = ssl._create_unverified_context
             seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
-            num_ftrs = seResNext.fc.in_features
+            num_ftrs = seResNext.se_resnext50.in_features
             # freeze the pretrained weight
             for param in seResNext.parameters():
                 param.requires_grad = False
