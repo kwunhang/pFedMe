@@ -139,6 +139,8 @@ def main(dataset, algorithm, model, batch_size, learning_rate, finetune_learning
         
         # server.train(start_iter=itered)
         # train the fully connected layer first
+        server.set_pick_prob()
+        
         server.num_glob_iters = num_global_warm_iters
         server.train()
         # fine tune the whole model 
