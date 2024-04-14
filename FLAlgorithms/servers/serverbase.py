@@ -29,6 +29,7 @@ class Server:
         self.times = times
         self.save_best= False
         self.best_model = None
+        self.select_prob = None
         # Initialize the server's grads to zeros
         #for param in self.model.parameters():
         #    param.data = torch.zeros_like(param.data)
@@ -144,6 +145,8 @@ class Server:
 
         num_users = min(num_users, len(self.users))
         #np.random.seed(round)
+        if (self.select_prob is not None):
+            return np.random.choice(self.users, num_users, replace=False, p=self.select_prob)
         return np.random.choice(self.users, num_users, replace=False) #, p=pk)
 
     # not in use
@@ -477,3 +480,10 @@ class Server:
             c.learning_rate = learning_rate
             c.optimizer = torch.optim.SGD(c.model.parameters(), lr=c.learning_rate)
         print("Finish to update lr")
+        
+    # instead of randomly pick client, pick client with probability
+    def set_pick_prob(self):
+        p = []
+        for c in self.users:
+            p.append(0.05 + c.train_samples /self.total_train_samples)
+        self.select_prob = p
