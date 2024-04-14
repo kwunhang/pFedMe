@@ -5,6 +5,7 @@ from FLAlgorithms.users.userperavg import UserPerAvg
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
 from analysis_utils import plot_function
+from FLAlgorithms.optimizers.fedoptimizer import MySGD
 
 
 # Implementation for per-FedAvg Server
@@ -108,3 +109,11 @@ class PerAvg(Server):
         with open(full_path, 'w') as f:
             for i in acc_log:
                 f.write(i+"\n")
+    
+    def update_lr(self, learning_rate):
+        print("Update lr")
+        for c in self.users:
+            c.learning_rate = learning_rate
+            c.optimizer = MySGD(c.model.parameters(), lr=c.learning_rate)
+        print("Finish to update lr")
+    

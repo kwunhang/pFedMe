@@ -5,6 +5,7 @@ from FLAlgorithms.users.userpFedMe import UserpFedMe
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
 import numpy as np
+from FLAlgorithms.optimizers.fedoptimizer import pFedMeOptimizer
 
 from analysis_utils import plot_function
 
@@ -119,3 +120,10 @@ class pFedMe(Server):
         with open(full_path, 'w') as f:
             for i in acc_log:
                 f.write(i+"\n")
+                
+    def update_lr(self, learning_rate):
+        print("Update pFedMe personal lr")
+        for c in self.users:
+            c.personal_learning_rate = learning_rate
+            c.optimizer = pFedMeOptimizer(c.model.parameters(), lr=c.personal_learning_rate, lamda=c.lamda)
+        print("Finish to update pFedMe personal lr")

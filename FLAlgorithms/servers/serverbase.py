@@ -462,3 +462,18 @@ class Server:
             path = os.path.join(model_path, f"user_{user.id}.pt")
             assert (os.path.exists(path))
             user.model.load_state_dict(torch.load(path))
+
+    def make_model_trainable(self):
+        print("Warmed up the fc layer in transfer learning")
+        print("Fine tune the whole learning model")
+        for c in self.users:
+            for param in c.model.parameters():
+                param.requires_grad = True
+        print("Finish to enable user model trainable")
+    
+    def update_lr(self, learning_rate):
+        print("Update lr")
+        for c in self.users:
+            c.learning_rate = learning_rate
+            c.optimizer = torch.optim.SGD(c.model.parameters(), lr=c.learning_rate)
+        print("Finish to update lr")

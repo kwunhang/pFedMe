@@ -17,6 +17,13 @@ class UserSelf(User):
 
         if(model[1] == "Mclr_CrossEntropy"):
             self.loss = nn.CrossEntropyLoss()
+        elif(model[1] == "se_resnext50"):
+            weighting_loss = []
+            y_train = torch.Tensor([y for _,y in train_data]).type(torch.int64)
+            for i in range(8):
+                weighting_loss.append(len(train_data)/(torch.sum(y_train==i).item()))
+            weighting_loss = torch.tensor(weighting_loss)
+            self.loss = nn.NLLLoss(weight=weighting_loss.to(device))
         else:
             self.loss = nn.NLLLoss()
 
