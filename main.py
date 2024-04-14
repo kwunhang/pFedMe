@@ -96,7 +96,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
             ssl._create_default_https_context = ssl._create_unverified_context
             seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
-            num_ftrs = seResNext.requires_grad.in_features
+            num_ftrs = seResNext.last_linear.in_features
             # freeze the pretrained weight
             for param in seResNext.parameters():
                 param.requires_grad = False
@@ -106,7 +106,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                 nn.Dropout(0.5),
                 nn.Linear(512, 8),
                 nn.LogSoftmax(dim=1))
-            model = resnet50.to(device), model
+            model = seResNext.to(device), model
 
         # select algorithm
         if(algorithm == "FedAvg"):
@@ -146,10 +146,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             server.load_all_model()
             
             # load the real test set
-            if dataset == "ISIC19_raw":
-                data = read_test_byClient(dataset, "final_test")
-            elif dataset == "ISIC19_raw_img_splited":
-                data = read_ISIC_data_byClient(dataset, "final_test")
+            data = read_test_byClient(dataset, "final_test")
             total_users = len(data[0])
             for i in range(total_users):
                 uid, train , test = read_user_data(i, data, dataset)
