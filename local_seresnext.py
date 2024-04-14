@@ -35,7 +35,7 @@ load_dotenv()
 os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
 EPOCHS = 150
 learning_rate = 0.0001
-batch_size = 128
+batch_size = 64
 save_path = 'ISIC19/se_resnext_fc_finetune/'
 checkpoint_path = 'check_point.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
