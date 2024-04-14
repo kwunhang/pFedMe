@@ -96,7 +96,7 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
             ssl._create_default_https_context = ssl._create_unverified_context
             seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
-            num_ftrs = seResNext.se_resnext50.in_features
+            num_ftrs = seResNext.requires_grad.in_features
             # freeze the pretrained weight
             for param in seResNext.parameters():
                 param.requires_grad = False
