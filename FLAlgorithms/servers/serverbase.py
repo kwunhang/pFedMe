@@ -486,4 +486,6 @@ class Server:
         p = []
         for c in self.users:
             p.append(0.05 + c.train_samples /self.total_train_samples)
+        p = np.asarray(p).astype('float64')
+        p = p / np.sum(p)
         self.select_prob = p
