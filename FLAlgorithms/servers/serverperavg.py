@@ -80,7 +80,12 @@ class PerAvg(Server):
                 
     def plot_graph(self):
         acc_log = []
-        graph_name = self.dataset + self.algorithm
+        # graph_name = self.dataset + self.algorithm
+        graph_name = self.algorithm
+        if (graph_name == "FedSelf"):
+            graph_name = "LocalSelf"
+        elif (graph_name == "FedInc"):
+            graph_name = "IncFL"
         self.send_parameters()
         true_label, predict_label = self.test_and_get_label()
         acc = plot_function(true_label, predict_label, graph_name)
