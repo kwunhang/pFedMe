@@ -9,6 +9,7 @@ from FLAlgorithms.servers.serveravg import FedAvg
 from FLAlgorithms.servers.serverpFedMe import pFedMe
 from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.servers.serverself import FedSelf
+from FLAlgorithms.servers.serverIncFL import IncFL
 from FLAlgorithms.trainmodel.models import *
 from utils.plot_utils import *
 import torch
@@ -25,7 +26,7 @@ load_dotenv()
 cpu = torch.device('cpu')
 
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file, pm_steps):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file, pm_steps, itered, epsilon):
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
     print("device:", device)
     if(model == "mclr"):
@@ -76,6 +77,9 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
 
     if(algorithm == "FedSelf"):
         server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
+    
+    if(algorithm == "FedInc"):
+        server = IncFL(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1, epsilon)
 
     # global model 
     assert (os.path.exists(path))
@@ -172,7 +176,7 @@ def get_pm10_modal_labels(algorithm, server):
 
 
 def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files, pm_steps):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files, pm_steps, itered, epsilon):
     true_labels_list = []
     predicted_labels_list = []
     client_labels = []
@@ -195,7 +199,9 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
             times = times,
             gpu=gpu,
             analysis_file = analysis_files[i],
-            pm_steps = pm_steps
+            pm_steps = pm_steps,
+            itered = itered,
+            epsilon = epsilon
         )
         true_labels_list.append(true_labels)
         predicted_labels_list.append(predicted_labels)
@@ -216,7 +222,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithms", nargs='+', default=["pFedMe"], choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf"]) 
+    parser.add_argument("--algorithms", nargs='+', default=["pFedMe"], choices=["pFedMe", "PerAvg", "FedAvg", "FedSelf", "FedInc"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
@@ -228,6 +234,8 @@ if __name__ == "__main__":
     parser.add_argument("--analysis_files_algorithm_three", nargs='+', default=[""])
     parser.add_argument("--analysis_files_algorithm_four", nargs='+', default=[""])
     parser.add_argument("--pm_steps", type=str, default="Global Model")
+    parser.add_argument("--itered", type=int, default=0, help="Number of iteration of previous training ")
+    parser.add_argument("--epsilon", type=float, default=0.01, help="epcilon for IncFL adaptive lr ")
     args = parser.parse_args()
 
     print("=" * 80)
@@ -248,6 +256,9 @@ if __name__ == "__main__":
     print("analysis_files_algorithm_three       : {}".format(args.analysis_files_algorithm_three))
     print("analysis_files_algorithm_four       : {}".format(args.analysis_files_algorithm_four))
     print("pm_steps: {}".format(args.pm_steps))
+    print("epsilon: {}".format(args.epsilon))
+    
+    
     
     
     true_labels_list = []
@@ -287,7 +298,9 @@ if __name__ == "__main__":
                 times=args.times,
                 gpu=args.gpu,
                 analysis_files=analysis_files,
-                pm_steps=args.pm_steps
+                pm_steps=args.pm_steps,
+                itered=args.itered,
+                epcilon=args.epsilon
             )
 
         # Append the results to their respective lists
