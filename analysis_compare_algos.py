@@ -350,10 +350,17 @@ if __name__ == "__main__":
                 epsilon=args.epsilon,
                 server = server
             )
-
+            
+        with open("temp/{}/true_labels.txt".format(algorithm), "w") as f:
+            f.write(str(true_labels_list))
+        with open("temp/{}/predicted_labels.txt".format(algorithm), "w") as f:
+            f.write(str(predicted_labels_list))
+        with open("temp/{}/client_labels.txt".format(algorithm), "w") as f:
+            f.write(str(client_labels_list))
+            
         # Append the results to their respective lists
         true_labels_list.append(true_labels)
         predicted_labels_list.append(predicted_labels)
         client_labels_list.append(client_labels)
-
+        
     compare_different_PRF_Algo(args.algorithms, client_labels_list, true_labels_list, predicted_labels_list, args.pm_steps)
