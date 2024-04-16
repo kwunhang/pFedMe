@@ -333,7 +333,7 @@ if __name__ == "__main__":
                 analysis_files=analysis_files,
                 pm_steps=args.pm_steps,
                 itered=args.itered,
-                epcilon=args.epsilon
+                epsilon=args.epsilon
             )
 
         # Append the results to their respective lists
