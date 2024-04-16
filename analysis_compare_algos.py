@@ -113,8 +113,8 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     elif("fed" in analysis_file):
         graph_name = graph_name+"_"+"fed"
 
-    # server.model.load_state_dict(torch.load(path))
-    server.model = torch.load(path)
+    server.model.load_state_dict(torch.load(path))
+    # server.model = torch.load(path)
     server.model = server.model.to(device)
     
     data = read_test_byClient(dataset, "final_test")
