@@ -27,7 +27,7 @@ def plot_cm(true_labels, predict_labels, model_name):
     
     plot_path = os.getenv('SAVE_PLOT_PATH')
     if plot_path == None or plot_path == "":
-        plot_path = "/kaggle/working/pFedMe/cifar_plot"
+        plot_path = "cifar_plot"
     if not os.path.exists(plot_path):
         os.makedirs(plot_path)
     fig, ax = plt.subplots()
@@ -61,7 +61,7 @@ def computePRF(true_labels, predicted_labels, model_name):
     
     print("debug for plot_path:", plot_path)
     if plot_path == None or plot_path == "":
-        plot_path = "/kaggle/working/pFedMe/cifar_plot"
+        plot_path = "cifar_plot"
     if not os.path.exists(plot_path):
             os.makedirs(plot_path)
             
@@ -98,7 +98,7 @@ def compare_different_PRF(client_labels, true_labels_list, predicted_labels_list
         performance_metrics[client_label]['recall'].append(recall)
         performance_metrics[client_label]['f1'].append(f1)
 
-    plot_path = os.getenv('SAVE_PLOT_PATH', "/kaggle/working/pFedMe/cifar_plot")
+    plot_path = os.getenv('SAVE_PLOT_PATH', "cifar_plot")
     if not os.path.exists(plot_path):
         os.makedirs(plot_path)
 
@@ -136,7 +136,7 @@ def compare_different_PRF_Algo(algorithms, client_labels, true_labels_list, pred
             performance_metrics[algorithm][client_label]['recall'].append(recall)
             performance_metrics[algorithm][client_label]['f1'].append(f1)
 
-    plot_path = os.getenv('SAVE_PLOT_PATH', "/kaggle/working/pFedMe/cifar_plot")
+    plot_path = os.getenv('SAVE_PLOT_PATH', "cifar_plot")
     if not os.path.exists(plot_path):
         os.makedirs(plot_path)
 
