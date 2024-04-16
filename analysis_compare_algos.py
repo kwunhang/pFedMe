@@ -29,77 +29,12 @@ load_dotenv()
 cpu = torch.device('cpu')
 
 def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file, pm_steps, itered, epsilon):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_file, pm_steps, itered, epsilon, server):
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
     print("device:", device)
-    if(model == "mclr"):
-        if(dataset == "Mnist"):
-            model = Mclr_Logistic().to(device), model
-        else:
-            model = Mclr_Logistic(60,10).to(device), model
-            
-    if(model == "cnn"):
-        if(dataset == "Mnist"):
-            model = Net().to(device), model
-        elif(dataset == "Cifar10" or dataset == "Cifar10ByClient"):
-            if "res" in analysis_file:
-                model = ResNet18().to(device), model
-            else:
-                model = CifarNet().to(device), model
-        elif(dataset == "ISIC19" or dataset == "ISIC19_raw"):
-            model = ResNet18_isic19(8).to(device), model
-        
-    if(model == "dnn"):
-        if(dataset == "Mnist"):
-            model = DNN().to(device), model
-        else: 
-            model = DNN(60,20,10).to(device), model
-            
-    if(model == "cnn_nBN"):
-        if(dataset.startswith("Cifar10")):
-            model = CifarNetNoBN().to(device), model
-    
-    if(model == "resnet50"):
-        # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
-        resnet50 = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
-        num_ftrs = resnet50.fc.in_features
-        resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
-        model = resnet50.to(device), model
-    
-    if(model == "se_resnext50"):
-            os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
-            ssl._create_default_https_context = ssl._create_unverified_context
-            seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
-            num_ftrs = seResNext.last_linear.in_features
-            # freeze the pretrained weight
-            for param in seResNext.parameters():
-                param.requires_grad = False
-            seResNext.last_linear = nn.Sequential(
-                nn.Linear(num_ftrs, 512),
-                nn.ReLU(True),
-                nn.Dropout(0.5),
-                nn.Linear(512, 8),
-                nn.LogSoftmax(dim=1))
-            model = seResNext.to(device), model
-
     path = "models/{}/{}".format(dataset, analysis_file)
     print("path:", path)
     
-    if(algorithm == "FedAvg"):
-        server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
-
-    if(algorithm == "pFedMe"):
-        server = pFedMe(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, K, personal_learning_rate, 1)
-
-    if(algorithm == "PerAvg"):
-        server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
-
-    if(algorithm == "FedSelf"):
-        server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
-    
-    if(algorithm == "FedInc"):
-        server = IncFL(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1, epsilon)
-
     # global model 
     assert (os.path.exists(path))
     
@@ -209,7 +144,7 @@ def get_pm10_modal_labels(algorithm, server):
 
 
 def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files, pm_steps, itered, epsilon):
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, analysis_files, pm_steps, itered, epsilon, server):
     true_labels_list = []
     predicted_labels_list = []
     client_labels = []
@@ -234,7 +169,8 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
             analysis_file = analysis_files[i],
             pm_steps = pm_steps,
             itered = itered,
-            epsilon = epsilon
+            epsilon = epsilon,
+            server = server
         )
         true_labels_list.append(true_labels)
         predicted_labels_list.append(predicted_labels)
@@ -243,6 +179,77 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
 
     return client_labels, true_labels_list, predicted_labels_list
 
+def build_server(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
+         local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, itered, epsilon):
+    device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
+    print("device:", device)
+    if(model == "mclr"):
+        if(dataset == "Mnist"):
+            model = Mclr_Logistic().to(device), model
+        else:
+            model = Mclr_Logistic(60,10).to(device), model
+            
+    if(model == "cnn"):
+        if(dataset == "Mnist"):
+            model = Net().to(device), model
+        # elif(dataset == "Cifar10" or dataset == "Cifar10ByClient"):
+        #     if "res" in analysis_file:
+        #         model = ResNet18().to(device), model
+        #     else:
+        #         model = CifarNet().to(device), model
+        elif(dataset == "ISIC19" or dataset == "ISIC19_raw"):
+            model = ResNet18_isic19(8).to(device), model
+        
+    if(model == "dnn"):
+        if(dataset == "Mnist"):
+            model = DNN().to(device), model
+        else: 
+            model = DNN(60,20,10).to(device), model
+            
+    if(model == "cnn_nBN"):
+        if(dataset.startswith("Cifar10")):
+            model = CifarNetNoBN().to(device), model
+    
+    if(model == "resnet50"):
+        # torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
+        resnet50 = torch.hub.load("pytorch/vision:v0.10.0", "resnet50", weights="IMAGENET1K_V2")
+        num_ftrs = resnet50.fc.in_features
+        resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
+        model = resnet50.to(device), model
+    
+    if(model == "se_resnext50"):
+            os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
+            ssl._create_default_https_context = ssl._create_unverified_context
+            seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
+            num_ftrs = seResNext.last_linear.in_features
+            # freeze the pretrained weight
+            for param in seResNext.parameters():
+                param.requires_grad = False
+            seResNext.last_linear = nn.Sequential(
+                nn.Linear(num_ftrs, 512),
+                nn.ReLU(True),
+                nn.Dropout(0.5),
+                nn.Linear(512, 8),
+                nn.LogSoftmax(dim=1))
+            model = seResNext.to(device), model
+    
+    if(algorithm == "FedAvg"):
+        server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
+
+    if(algorithm == "pFedMe"):
+        server = pFedMe(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, K, personal_learning_rate, 1)
+
+    if(algorithm == "PerAvg"):
+        server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
+
+    if(algorithm == "FedSelf"):
+        server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
+    
+    if(algorithm == "FedInc"):
+        server = IncFL(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1, epsilon)
+
+    return server 
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -313,6 +320,26 @@ if __name__ == "__main__":
     
     
     for analysis_files, algorithm in zip(zip_list, args.algorithms):
+        server =  build_server(
+            dataset=args.dataset,
+            algorithm=algorithm,
+            model=args.model,
+            batch_size=args.batch_size,
+            learning_rate=args.learning_rate,
+            beta=args.beta, 
+            lamda=args.lamda,
+            num_glob_iters=args.num_global_iters,
+            local_iters=args.local_iters,
+            optimizer=args.optimizer,
+            numusers=args.numusers,
+            K=args.K,
+            personal_learning_rate=args.personal_learning_rate,
+            times=args.times,
+            gpu=args.gpu,
+            itered=args.itered,
+            epsilon=args.epsilon
+        )
+        
         if len(analysis_files) > 0:
             client_labels,true_labels, predicted_labels = collect_data(
                 dataset=args.dataset,
@@ -333,7 +360,8 @@ if __name__ == "__main__":
                 analysis_files=analysis_files,
                 pm_steps=args.pm_steps,
                 itered=args.itered,
-                epsilon=args.epsilon
+                epsilon=args.epsilon,
+                server = server
             )
 
         # Append the results to their respective lists
