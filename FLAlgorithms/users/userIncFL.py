@@ -7,6 +7,8 @@ import json
 from torch.utils.data import DataLoader
 from FLAlgorithms.optimizers.fedoptimizer import MySGD, FEDLOptimizer
 from FLAlgorithms.users.userbase import User
+import numpy as np
+
 
 # Implementation for Per-FedAvg clients
 
@@ -90,10 +92,10 @@ class UserIncFL(User):
         return LOSS
 
     def init_rho(self):
-        init_loss = 0
+        init_loss = []
         with torch.no_grad():
-            for x, y in self.testloaderfull:
+            for x, y in self.testloader:
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
-                init_loss += self.loss(output, y)
-        self.rho = init_loss
+                init_loss.append(self.loss(output, y).item())
+        self.rho = np.mean(init_loss)
