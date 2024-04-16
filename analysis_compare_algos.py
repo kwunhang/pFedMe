@@ -11,9 +11,12 @@ from FLAlgorithms.servers.serverperavg import PerAvg
 from FLAlgorithms.servers.serverself import FedSelf
 from FLAlgorithms.servers.serverIncFL import IncFL
 from FLAlgorithms.trainmodel.models import *
+from utils.model_utils import read_test_byClient, read_user_data, read_ISIC_data_byClient
 from utils.plot_utils import *
 import torch
 from analysis_utils import compare_different_PRF_Algo
+import pretrainedmodels
+import ssl
 
 import argparse
 torch.manual_seed(0)
@@ -62,6 +65,22 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         num_ftrs = resnet50.fc.in_features
         resnet50.fc = nn.Sequential(nn.Linear(num_ftrs, 8), nn.LogSoftmax(dim=1))
         model = resnet50.to(device), model
+    
+    if(model == "se_resnext50"):
+            os.environ["TORCH_HOME"] = "/research/d2/fyp23/khlau1/pretrainedmodels/"
+            ssl._create_default_https_context = ssl._create_unverified_context
+            seResNext = pretrainedmodels.__dict__["se_resnext50_32x4d"](num_classes=1000, pretrained='imagenet')
+            num_ftrs = seResNext.last_linear.in_features
+            # freeze the pretrained weight
+            for param in seResNext.parameters():
+                param.requires_grad = False
+            seResNext.last_linear = nn.Sequential(
+                nn.Linear(num_ftrs, 512),
+                nn.ReLU(True),
+                nn.Dropout(0.5),
+                nn.Linear(512, 8),
+                nn.LogSoftmax(dim=1))
+            model = seResNext.to(device), model
 
     path = "models/{}/{}".format(dataset, analysis_file)
     print("path:", path)
@@ -98,13 +117,27 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     server.model = torch.load(path)
     server.model = server.model.to(device)
     
-    if(dataset == "ISIC19_raw"):
+    data = read_test_byClient(dataset, "final_test")
+    total_users = len(data[0])
+    for i in range(total_users):
+        uid, train , test = read_user_data(i, data, dataset)
+        # find user by id
+        the_user = None
+        for user in server.users:
+            if user.id == uid:
+                the_user = user
+                break
+        the_user.new_dataloader(train , test)
+    
+    if(dataset == "ISIC19_raw" or dataset == "ISIC19_raw_img_splited"):
         for user in server.users:
             user_path = "{}_user_{}.pt".format(algorithm, user.id)
             if(analysis_file == user_path):
                 path = "models/{}/{}".format(dataset, analysis_file)
                 assert (os.path.exists(path))
                 user.model = torch.load(path)
+                
+                # user.model.load_state_dict(torch.load(path))
                 
                 true_label, predict_label = user.test_and_get_label()
                 return true_label, predict_label
@@ -213,8 +246,8 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw"])
-    parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn", "cnn_nBN", "resnet50"])
+    parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw", "ISIC19_raw_img_splited"])
+    parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn", "cnn_nBN", "resnet50", "resnet50_v2", "se_resnext50"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
