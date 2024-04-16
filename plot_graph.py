@@ -145,13 +145,6 @@ def main(dataset, algorithm, model, batch_size, learning_rate, finetune_learning
 
         server.plot_graph()
         
-    # Average data 
-    if(algorithm == "PerAvg"):
-        algorithm == "PerAvg_p"
-    if(algorithm == "pFedMe"):
-        average_data(num_users=numusers, loc_ep1=local_iters, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms="pFedMe_p", batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
-    average_data(num_users=numusers, loc_ep1=local_iters, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms=algorithm, batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw", "ISIC19_raw_img_splited"])
