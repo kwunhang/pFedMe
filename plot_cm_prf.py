@@ -71,10 +71,12 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     # server.send_parameters()
     # server.evaluate()
     
-    path = "models/{}/{}".format(dataset, analysis_file)
+    path = analysis_file
     print("path:", path)
+    
     if(algorithm == "FedInc"):
         server = IncFL(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1, epsilon)
+    
     if(algorithm == "FedAvg"):
         server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
 
@@ -84,131 +86,12 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     if(algorithm == "PerAvg"):
         server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, 1)
 
-    if(algorithm == "FedSelf"):
-        server = FedSelf(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i)
-
-    
-    
 
     # global model 
-    assert (os.path.exists(path))
+    assert (os.path.exists(analysis_file))
     
 
-    
-    
-    # graph name implementation
-    graph_name = algorithm
-    if "res" in analysis_file:    
-        graph_name = graph_name+"_"+"ResNet"
-    
-    if("silo" in analysis_file):
-        graph_name = graph_name+"_"+"silo"
-    elif("fed" in analysis_file):
-        graph_name = graph_name+"_"+"fed"
-
-    
-    
-    # check file type
-    if(path.endswith(".pt")):   
-        
-        print("debug ******************************")
-        print("path:", path)
-        server.model.load_state_dict(torch.load(path))
-                # server.model = torch.load(path)
-        server.model = server.model.to(device)
-        server.send_parameters()
-        server.update_server_BN()
-        # server.update_user_BN() expect the user BN is saved
-        server.aggregate_parameters()
-        
-        true_label, predict_label = server.test_and_get_label()
-        plot_function(true_label, predict_label, graph_name)
-            
-        # personalize --> pFedMe and PerAvg only
-        if(algorithm == "pFedMe" or algorithm == "PerAvg"):
-            # make prediction with personal model with 1step gradient decent
-            true_label = []
-            predict_label = []
-            for user in server.users:
-                if(algorithm == "pFedMe"):
-                    user.train(1)
-                elif(algorithm == "PerAvg"):
-                    user.train_one_step()
-                
-            true_label, predict_label = server.test_and_get_label()
-            
-            plot_function(true_label, predict_label, "{}(PM1)1step".format(graph_name))
-
-            
-            # make prediction to with personal model of user 0
-            # true_label = []
-            # predict_label = []
-            # model = server.users[0].model
-            # model.eval()
-            # with torch.no_grad():
-            #     for user in server.users:
-            #         # testloader = user.testloaderfull
-            #         for x,y in user.testloaderfull:
-            #             true_label.extend(y.numpy())
-            #             x, y = x.to(device), y.to(device)
-            #             output = model(x)
-            #             predict = (torch.argmax(output, dim=1) )
-            #             predict_label.extend(predict.cpu().numpy())       
-            # plot_function(true_label, predict_label, "{}(PM2)1step".format(graph_name))
-            
-            # 4 more steps 
-            
-            # make prediction with personal model with 1step gradient decent
-            true_label = []
-            predict_label = []
-            for user in server.users:
-                if(algorithm == "pFedMe"):
-                    user.train(4)
-                elif(algorithm == "PerAvg"):
-                    user.train_one_step()
-                    user.train_one_step()
-                    user.train_one_step()
-                    user.train_one_step()
-                
-            true_label, predict_label = server.test_and_get_label()
-             
-            plot_function(true_label, predict_label, "{}(PM1)5step".format(graph_name))
-            
-            # make prediction to with personal model of user 0
-            # true_label = []
-            # predict_label = []
-            # model = server.users[0].model
-            # model.eval()
-            # with torch.no_grad():
-            #     for user in server.users:
-            #         # testloader = user.testloaderfull
-            #         for x,y in user.testloaderfull:
-            #             true_label.extend(y.numpy())
-            #             x, y = x.to(device), y.to(device)
-            #             output = model(x)
-            #             predict = (torch.argmax(output, dim=1) )
-            #             predict_label.extend(predict.cpu().numpy())
-            # plot_function(true_label, predict_label, "{}(PM2)5step".format(graph_name))
-            
-            # make prediction with personal model with 5step gradient decent
-            true_label = []
-            predict_label = []
-            for user in server.users:
-                if(algorithm == "pFedMe"):
-                    user.train(5)
-                elif(algorithm == "PerAvg"):
-                    user.train_one_step()
-                    user.train_one_step()
-                    user.train_one_step()
-                    user.train_one_step()
-                    user.train_one_step()
-                
-            true_label, predict_label = server.test_and_get_label()
-            
-            plot_function(true_label, predict_label, "{}(PM1)10step".format(graph_name))
-
-    elif(path.endswith(".h5")):
-        plot_train_results(path, graph_name)
+    server.plot_graph(analysis_file, analysis_file)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

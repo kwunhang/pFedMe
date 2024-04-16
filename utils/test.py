@@ -44,10 +44,8 @@ def ISIC_raw_train_transforms():
             brightness_limit=0.1, 
             contrast_limit=0.2, brightness_by_max=True, always_apply=False, p=1),],p=1.0),
         ], p=0.15),
-        ToTensorV2(p=1.0),
     ], p=1.0)
     return transforms
-
 
 
 def ISIC_raw_valid_transforms():

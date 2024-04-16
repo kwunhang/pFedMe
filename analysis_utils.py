@@ -205,6 +205,58 @@ def plot_train_results(h5_path, model_name):
     
     return plt
 
+def compare_train_results(h5_paths, model_names):
+    plt.figure(figsize=(10, 5))
+    for h5_path, model_name in zip(h5_paths, model_names):
+        with h5py.File(h5_path, 'r') as hf:
+            # Load the data from the h5 file using the keys
+            rs_glob_acc = hf['rs_glob_acc'][:200]
+            rs_train_acc = hf['rs_train_acc'][:200]
+            rs_train_loss = hf['rs_train_loss'][:200]
+
+        # Plot train loss
+        plt.plot(rs_train_loss, label='{}'.format(model_name))
+
+    plt.xlabel('Iterations')
+    plt.ylabel('Loss')
+    plt.title('Train Loss Comparison')
+    plt.legend()
+    plt.show()
+    plt.savefig(fname=("Cifar_per_plot/loss_comparison.png"))
+
+    # Plot train accuracy
+    plt.figure(figsize=(10, 5))
+    for h5_path, model_name in zip(h5_paths, model_names):
+        with h5py.File(h5_path, 'r') as hf:
+            rs_train_acc = hf['rs_train_acc'][:200]
+
+        plt.plot(rs_train_acc, label='{}'.format(model_name))
+
+    plt.xlabel('Iterations')
+    plt.ylabel('Accuracy')
+    plt.title('Train Accuracy Comparison')
+    plt.legend()
+    plt.show()
+    plt.savefig(fname=("Cifar_per_plot/acc_comparison.png"))
+
+    # Plot global accuracy
+    plt.figure(figsize=(10, 5))
+    for h5_path, model_name in zip(h5_paths, model_names):
+        with h5py.File(h5_path, 'r') as hf:
+            rs_glob_acc = hf['rs_glob_acc'][:200]
+
+        plt.plot(rs_glob_acc, label='{}'.format(model_name))
+
+    plt.xlabel('Iterations')
+    plt.ylabel('Accuracy')
+    plt.title('Test accuracy comparison')
+    plt.legend()
+    plt.show()
+    plt.savefig(fname=("Cifar_per_plot/test_acc_comparison.png"))
+    
+    return plt
+
+
 def compare_model_PRF_function(true_label_list, predict_label_list, graph_name, analysis_files):
     assert len(true_label_list) == len(predict_label_list) == len(analysis_files), "Lists must have the same length."
 
