@@ -52,32 +52,20 @@ def analyse(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
     # server.model = torch.load(path)
     server.model = server.model.to(device)
     
-    data = read_test_byClient(dataset, "final_test")
-    total_users = len(data[0])
-    for i in range(total_users):
-        uid, train , test = read_user_data(i, data, dataset)
-        # find user by id
-        the_user = None
-        for user in server.users:
-            if user.id == uid:
-                the_user = user
-                break
-        the_user.new_dataloader(train , test)
-    
     if(dataset == "ISIC19_raw" or dataset == "ISIC19_raw_img_splited"):
-        for user in server.users:
-            user_path = "{}_user_{}.pt".format(algorithm, user.id)
-            if(analysis_file == user_path):
-                path = "models/{}/{}".format(dataset, analysis_file)
-                assert (os.path.exists(path))
-                user.model = torch.load(path)
-                
-                # user.model.load_state_dict(torch.load(path))
-                
-                true_label, predict_label = user.test_and_get_label()
-                return true_label, predict_label
-                
-                
+        data = read_test_byClient(dataset, "final_test")
+        total_users = len(data[0])
+        for i in range(total_users):
+            uid, train , test = read_user_data(i, data, dataset)
+            # find user by id
+            the_user = None
+            for user in server.users:
+                if user.id == uid:
+                    the_user = user
+                    break
+            the_user.new_dataloader(train , test)
+    
+                                
     if(pm_steps == "pm1"):
         true_label, predict_label = get_pm1_modal_labels(algorithm, server)
     elif(pm_steps == "pm5"):
@@ -149,7 +137,6 @@ def collect_data(dataset, algorithm, model, batch_size, learning_rate, beta, lam
     predicted_labels_list = []
     client_labels = []
     for i in range(len(analysis_files)):
-        
         true_labels, predicted_labels = analyse(
             dataset=dataset,
             algorithm = algorithm,
