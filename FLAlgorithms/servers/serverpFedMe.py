@@ -18,7 +18,7 @@ class pFedMe(Server):
                          local_iters, optimizer, num_users, times)
 
         # Initialize data for all  users
-        data = read_data(dataset)
+        data = read_test_byClient(dataset, "final_test")
         total_users = len(data[0])
         self.K = K
         self.personal_learning_rate = personal_learning_rate

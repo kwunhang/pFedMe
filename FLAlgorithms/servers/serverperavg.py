@@ -17,7 +17,7 @@ class PerAvg(Server):
                          local_iters, optimizer, num_users, times)
 
         # Initialize data for all  users
-        data = read_data(dataset)
+        data = read_test_byClient(dataset, "final_test")
         total_users = len(data[0])
         for i in range(total_users):
             id, train , test = read_user_data(i, data, dataset)
