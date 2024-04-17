@@ -149,7 +149,7 @@ def predict(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, n
         for c in server.users:
             true_label, predict_label = c.test_and_get_label()
             f1 = f1_score(true_label,predict_label,average='macro')
-            acc = accuracy_score(true_label,predict_label,average='macro')
+            acc = accuracy_score(true_label,predict_label)
             ret[server.users.id] = {"f1": f1, "acc": acc}
         return ret
 
