@@ -30,7 +30,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
+def main(dataset, algorithm, model, batch_size, learning_rate, finetune_learning_rate, beta, lamda, num_global_warm_iters ,num_glob_iters,
          local_iters, optimizer, numusers, K, personal_learning_rate, times, gpu, restore, itered, epsilon):
 
     # Get device status: Check GPU or CPU
@@ -123,21 +123,6 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
 
         if(algorithm == "FedInc"):
             server = IncFL(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_iters, optimizer, numusers, i, epsilon)
-
-        if (restore == 1 and i==0):
-            model_path = "restore"
-            if os.path.exists(model_path) and len(os.listdir(model_path))==1:
-                model_path = os.path.join(model_path,os.listdir(model_path)[0])
-                server.model = torch.load(model_path)
-                server.update_user_BN()
-                print("restored the model and BN param.")
-            else:
-                print("fail to restore")
-                exit()
-        # print("user model",server.users[0].model)
-        # print("user optimizer",server.users[0].optimizer)
-        server.train(start_iter=itered)
-        server.test()
                 
         # plot graph after training
         if(dataset == "ISIC19_raw" or dataset == "ISIC19_raw_img_splited"):
@@ -157,26 +142,20 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
                         the_user = user
                         break
                 the_user.new_dataloader(train , test)
-                
-        
+
         server.plot_graph()
         
-    # Average data 
-    if(algorithm == "PerAvg"):
-        algorithm == "PerAvg_p"
-    if(algorithm == "pFedMe"):
-        average_data(num_users=numusers, loc_ep1=local_iters, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms="pFedMe_p", batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
-    average_data(num_users=numusers, loc_ep1=local_iters, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms=algorithm, batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10", "Cifar10ByClient", "ISIC19", "ISIC19_raw", "ISIC19_raw_img_splited"])
     parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn", "cnn_nBN", "resnet50", "resnet50_v2", "se_resnext50"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
+    parser.add_argument("--finetune_learning_rate", type=float, default=0.0005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
     parser.add_argument("--lamda", type=int, default=15, help="Regularization term")
     parser.add_argument("--epsilon", type=float, default=0.01, help="epcilon for IncFL adaptive lr ")
+    parser.add_argument("--num_global_warm_iters", type=int, default=50, help="Number of iteration of training fully connected layer(it count within the num_global)")
     parser.add_argument("--num_global_iters", type=int, default=800)
     parser.add_argument("--local_iters", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
@@ -199,8 +178,10 @@ if __name__ == "__main__":
     print("Algorithm: {}".format(args.algorithm))
     print("Batch size: {}".format(args.batch_size))
     print("Learing rate       : {}".format(args.learning_rate))
+    print("Fine tune learing rate       : {}".format(args.finetune_learning_rate))
     print("Average Moving       : {}".format(args.beta))
     print("Subset of users      : {}".format(args.numusers))
+    print("Number of global warm rounds       : {}".format(args.num_global_warm_iters))
     print("Number of global rounds       : {}".format(args.num_global_iters))
     print("Number of local rounds       : {}".format(args.local_iters))
     print("Dataset       : {}".format(args.dataset))
@@ -213,8 +194,10 @@ if __name__ == "__main__":
         model=args.model,
         batch_size=args.batch_size,
         learning_rate=args.learning_rate,
+        finetune_learning_rate = args.finetune_learning_rate,
         beta = args.beta, 
         lamda = args.lamda,
+        num_global_warm_iters = args.num_global_warm_iters,
         num_glob_iters=args.num_global_iters,
         local_iters=args.local_iters,
         optimizer= args.optimizer,

@@ -28,6 +28,8 @@ class Server:
         self.rs_train_acc, self.rs_train_loss, self.rs_glob_acc,self.rs_train_acc_per, self.rs_train_loss_per, self.rs_glob_acc_per = [], [], [], [], [], []
         self.times = times
         self.save_best= False
+        self.best_model = None
+        self.select_prob = None
         # Initialize the server's grads to zeros
         #for param in self.model.parameters():
         #    param.data = torch.zeros_like(param.data)
@@ -88,16 +90,36 @@ class Server:
     #     self.model.load_state_dict(global_model)
 
     def save_model(self, global_iter=None):
-        saveModel = copy.deepcopy(self.model).to(cpu)
-        model_path = os.path.join("models", self.dataset)
+        model_path = os.getenv('SAVE_MODEL_PATH')
+        if model_path == None or model_path == "":
+            model_path = "models"
+            model_path = os.path.join(model_path, self.dataset)
+        if global_iter:
+            model_path = os.path.join(model_path, "iter_" + global_iter)
         if not os.path.exists(model_path):
             os.makedirs(model_path)
-        if global_iter:
-            # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
-            torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
-        else:
-            # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
-            torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        torch.save(self.model.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+
+    def save_all_client_model(self, global_iter=None, model_path=None):
+        if model_path==None:
+            model_path = os.getenv('SAVE_MODEL_PATH')
+            if model_path == None or model_path == "":
+                model_path = "models"
+                model_path = os.path.join(model_path, self.dataset)
+            if global_iter:
+                model_path = os.path.join(model_path, "iter_" + global_iter)
+            if not os.path.exists(model_path):
+                os.makedirs(model_path)
+        for user in self.users:
+            user.save_model(model_path)
+            
+        # if global_iter:
+        #     # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+        #     torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(global_iter) + ".pt"))
+        # else:
+        #     # torch.save(self.model, os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        #     torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+        
 
     def load_model(self):
         model_path = os.path.join("models", self.dataset, "server" + ".pt")
@@ -123,6 +145,8 @@ class Server:
 
         num_users = min(num_users, len(self.users))
         #np.random.seed(round)
+        if (self.select_prob is not None):
+            return np.random.choice(self.users, num_users, replace=False, p=self.select_prob)
         return np.random.choice(self.users, num_users, replace=False) #, p=pk)
 
     # not in use
@@ -181,6 +205,23 @@ class Server:
         # aaggregate avergage model with previous model using parameter beta 
         for pre_param, param in zip(previous_param, self.model.parameters()):
             param.data = (1 - self.beta)*pre_param.data + self.beta*param.data
+            
+    def incfl_aggregate_parameters(self):
+        assert (self.users is not None and len(self.users) > 0)
+        
+        factor_base = self.epsilon
+        for user in self.selected_users:
+            factor_base += user.qk
+        # factor_base += e
+        cur_lr = self.learning_rate / factor_base
+        
+        for user in self.selected_users:
+            self.add_weight(self.model.parameters(),cur_lr,user.qk, user.delta)        
+        # may ratio the weight with training sample       
+
+    def add_weight(self, model_parameters, lr, qk, weight):
+        for model_param, weight_param in zip(model_parameters, weight):
+            model_param.data = model_param.data - lr * qk * weight_param.data
             
     # Save loss, accurancy to h5 fiel
     def save_results(self, t= None):
@@ -260,6 +301,7 @@ class Server:
             tl, pl = c.test_and_get_label()
             true_label.extend(tl)
             predict_label.extend(pl)
+        
             
         return true_label, predict_label
 
@@ -308,10 +350,10 @@ class Server:
 
     def evaluate(self):
         stats = self.test()  
-        stats_GM = self.testGM()
+        # stats_GM = self.testGM()
         stats_train = self.train_error_and_loss()
         glob_acc = np.sum(stats[2])*1.0/np.sum(stats[1])
-        glob_acc_GM = np.sum(stats_GM[2])*1.0/np.sum(stats_GM[1])
+        # glob_acc_GM = np.sum(stats_GM[2])*1.0/np.sum(stats_GM[1])
         train_acc = np.sum(stats_train[2])*1.0/np.sum(stats_train[1])
         # train_loss = np.dot(stats_train[3], stats_train[1])*1.0/np.sum(stats_train[1])
         train_loss = sum([x * y for (x, y) in zip(stats_train[1], stats_train[3])]).item() / np.sum(stats_train[1])
@@ -325,7 +367,7 @@ class Server:
         if(last_best >= 30):
             print(f"!!!! There is already {last_best} round no improvemnt!")
         print("Average Global Accurancy: ", glob_acc)
-        print("Average Global Accurancy: (Global model) ", glob_acc_GM)
+        # print("Average Global Accurancy: (Global model) ", glob_acc_GM)
         print("Average Global Trainning Accurancy: ", train_acc)
         print("Average Global Trainning Loss: ",train_loss)
 
@@ -389,17 +431,61 @@ class Server:
             if(key.endswith("running_var") or key.endswith("running_mean")):
                 global_model[key]= (torch.zeros_like(data))
     
-    def save_best_model(self, step = None, pFedMe= False):
-        if (self.save_best== True):
-            saveModel = copy.deepcopy(self.model).to(cpu)
-            model_path = os.path.join("models", self.dataset)
+    def save_best_model(self, step = None, final = False):
+        if (self.save_best== True or final==True):
+            if (self.save_best== True):
+                self.best_model = copy.deepcopy(self.model)
+            model_path = os.getenv('SAVE_MODEL_PATH')
+            if model_path == None or model_path == "":
+                model_path = "models"
+                model_path = os.path.join(model_path, self.dataset)
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
             model_path = os.path.join(model_path, "bestModel")
             if not os.path.exists(model_path):
                 os.makedirs(model_path)
-            if pFedMe == False:
-                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_" + str(step) + ".pt"))
-            else:
-                torch.save(saveModel.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + "_bestPersonModel_" + str(step) + ".pt"))
+            torch.save(self.best_model.state_dict(), os.path.join(model_path, self.algorithm + "_" + "server" + ".pt"))
+            self.save_all_client_model(model_path=model_path)
             self.save_best= False
+            
+    # only load model after the data is readed, for the id purpose
+    def load_all_model(self, model_path=None):
+        if model_path ==None:
+            model_path = os.getenv('SAVE_MODEL_PATH')
+            model_path = os.path.join(model_path, "bestModel")
+        model_files = os.listdir(model_path)
+        model_files = [f for f in model_files if f.endswith('.pt')]
+        for f in model_files:
+            if "server" in f:
+                if (self.algorithm + "_" + "server" + ".pt" != f):
+                    print("!!!!!! The loading model of server seem have problem\nThe expect model file: {self.algorithm}_server.pt\nCurent load model file: {f}")
+                path = os.path.join(model_path, f)
+                self.model.load_state_dict(torch.load(path))
+        for user in self.users:
+            path = os.path.join(model_path, f"user_{user.id}.pt")
+            assert (os.path.exists(path))
+            user.model.load_state_dict(torch.load(path))
+
+    def make_model_trainable(self):
+        print("Warmed up the fc layer in transfer learning")
+        print("Fine tune the whole learning model")
+        for c in self.users:
+            for param in c.model.parameters():
+                param.requires_grad = True
+        print("Finish to enable user model trainable")
+    
+    def update_lr(self, learning_rate):
+        print("Update lr")
+        for c in self.users:
+            c.learning_rate = learning_rate
+            c.optimizer = torch.optim.SGD(c.model.parameters(), lr=c.learning_rate)
+        print("Finish to update lr")
+        
+    # instead of randomly pick client, pick client with probability
+    def set_pick_prob(self):
+        p = []
+        for c in self.users:
+            p.append(0.05 + c.train_samples /self.total_train_samples)
+        p = np.asarray(p).astype('float64')
+        p = p / np.sum(p)
+        self.select_prob = p

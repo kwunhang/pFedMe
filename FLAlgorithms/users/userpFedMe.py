@@ -18,6 +18,15 @@ class UserpFedMe(User):
 
         if(model[1] == "Mclr_CrossEntropy"):
             self.loss = nn.CrossEntropyLoss()
+        elif(model[1] == "se_resnext50"):
+            weighting_loss = []
+            y_train = torch.Tensor([y for _,y in train_data]).type(torch.int64)
+            for i in range(8):
+                num_i = torch.sum(y_train==i).item()
+                weight = len(train_data)/(torch.sum(y_train==i).item()) if num_i != 0 else 1
+                weighting_loss.append(weight)
+            weighting_loss = torch.tensor(weighting_loss)
+            self.loss = nn.NLLLoss(weight=weighting_loss.to(device))
         else:
             self.loss = nn.NLLLoss()
 
@@ -33,10 +42,12 @@ class UserpFedMe(User):
             for idx, model_grad in enumerate(self.model.parameters()):
                 model_grad.data = new_grads[idx]
 
-    def train(self, epochs):
+    def train(self, epochs = None):
+        if epochs == None:
+            epochs = self.local_iters
         LOSS = 0
         self.model.train()
-        for iter in range(1, self.local_iters + 1):  # local update
+        for iter in range(1, epochs + 1):  # local update
             self.model.train()
             X, y = self.get_next_train_batch()
 

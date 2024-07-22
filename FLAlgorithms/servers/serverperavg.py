@@ -4,6 +4,9 @@ import os
 from FLAlgorithms.users.userperavg import UserPerAvg
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
+from analysis_utils import plot_function
+from FLAlgorithms.optimizers.fedoptimizer import MySGD
+
 
 # Implementation for per-FedAvg Server
 
@@ -61,9 +64,61 @@ class PerAvg(Server):
                 user.train(self.local_iters) #* user.train_samples
                 
             self.aggregate_parameters()
-            if(glob_iter % 100 == 99):
-                self.save_model(glob_iter+1)
-                self.save_results()
+            # if(glob_iter % 100 == 99):
+            #     self.save_model(glob_iter+1)
+            #     self.save_all_client_model(glob_iter+1)
+            #     self.save_results()
 
         self.save_results()
         self.save_model()
+        self.save_all_client_model()
+        
+    def trainAllClient(self, step):
+        for user in self.users:
+            for i in range(step):
+                user.train_one_step()
+                
+    def plot_graph(self):
+        acc_log = []
+        # graph_name = self.dataset + self.algorithm
+        graph_name = self.algorithm
+        if (graph_name == "FedSelf"):
+            graph_name = "LocalSelf"
+        elif (graph_name == "FedInc"):
+            graph_name = "IncFL"
+        self.send_parameters()
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, graph_name)
+        acc_log.append(acc)
+        
+        self.trainAllClient(step=1)
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, "{}(PM)1step".format(graph_name))
+        acc_log.append(acc)
+        
+        self.trainAllClient(step=4)
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, "{}(PM)5step".format(graph_name))
+        acc_log.append(acc)
+        
+        self.trainAllClient(step=5)
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, "{}(PM)10step".format(graph_name))
+        acc_log.append(acc)
+                
+        plot_path = os.getenv('SAVE_PLOT_PATH')
+        if plot_path == None or plot_path == "":
+            plot_path = "plot"
+        full_path = os.path.join(plot_path, "acc_log.txt")
+        
+        with open(full_path, 'w') as f:
+            for i in acc_log:
+                f.write(i+"\n")
+    
+    def update_lr(self, learning_rate):
+        print("Update lr")
+        for c in self.users:
+            c.learning_rate = learning_rate
+            c.optimizer = MySGD(c.model.parameters(), lr=c.learning_rate)
+        print("Finish to update lr")
+    

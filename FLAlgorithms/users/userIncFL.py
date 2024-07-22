@@ -7,16 +7,21 @@ import json
 from torch.utils.data import DataLoader
 from FLAlgorithms.optimizers.fedoptimizer import MySGD, FEDLOptimizer
 from FLAlgorithms.users.userbase import User
+import numpy as np
+
 
 # Implementation for Per-FedAvg clients
 
-class UserPerAvg(User):
+class UserIncFL(User):
     def __init__(self, device, numeric_id, train_data, test_data, model, batch_size, learning_rate,beta,lamda,
                  local_iters, optimizer, total_users , num_users):
         super().__init__(device, numeric_id, train_data, test_data, model[0], batch_size, learning_rate, beta, lamda,
                          local_iters)
         self.total_users = total_users
         self.num_users = num_users
+        self.rho = None
+        self.delta = None
+        self.qk = None
         
         if(model[1] == "Mclr_CrossEntropy"):
             self.loss = nn.CrossEntropyLoss()
@@ -60,51 +65,37 @@ class UserPerAvg(User):
     
     def train(self, epochs):
         LOSS = 0
+        # calculate aggregation weight
+        self.model.eval()
+        init_loss = 0
+        with torch.no_grad():
+            for x, y in self.testloaderfull:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                init_loss += self.loss(output, y)
+        self.qk = nn.Sigmoid()(init_loss - self.rho)
+        
+        # local_model save the previous model
+        self.clone_model_paramenter(self.model.parameters(), self.local_model)
+
         self.model.train()
-        for epoch in range(1, self.local_iters + 1):  # local update 
+        for iter in range(1, self.local_iters + 1):
             self.model.train()
-
-            temp_model = copy.deepcopy(list(self.model.parameters()))
-
-            #step 1
             X, y = self.get_next_train_batch()
             self.optimizer.zero_grad()
             output = self.model(X)
             loss = self.loss(output, y)
             loss.backward()
             self.optimizer.step()
+        self.delta = self.get_train_delta(list(self.model.parameters()), self.local_model)       
+        
+        return LOSS
 
-            #step 2
-            X, y = self.get_next_train_batch()
-            self.optimizer.zero_grad()
-            output = self.model(X)
-            loss = self.loss(output, y)
-            loss.backward()
-
-            # restore the model parameters to the one before first update
-            for old_p, new_p in zip(self.model.parameters(), temp_model):
-                old_p.data = new_p.data.clone()
-                
-            self.optimizer.step(beta = self.beta)
-
-            # clone model to user model 
-            self.clone_model_paramenter(self.model.parameters(), self.local_model)
-
-        return LOSS    
-
-    def train_one_step(self):
-        self.model.train()
-        #step 1
-        X, y = self.get_next_train_batch()
-        self.optimizer.zero_grad()
-        output = self.model(X)
-        loss = self.loss(output, y)
-        loss.backward()
-        self.optimizer.step()
-            #step 2
-        X, y = self.get_next_train_batch()
-        self.optimizer.zero_grad()
-        output = self.model(X)
-        loss = self.loss(output, y)
-        loss.backward()
-        self.optimizer.step(beta=self.beta)
+    def init_rho(self):
+        init_loss = []
+        with torch.no_grad():
+            for x, y in self.testloader:
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                init_loss.append(self.loss(output, y).item())
+        self.rho = np.mean(init_loss)

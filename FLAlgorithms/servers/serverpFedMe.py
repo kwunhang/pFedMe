@@ -5,7 +5,10 @@ from FLAlgorithms.users.userpFedMe import UserpFedMe
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
 import numpy as np
- 
+from FLAlgorithms.optimizers.fedoptimizer import pFedMeOptimizer
+
+from analysis_utils import plot_function
+
 # Implementation for pFedMe Server
 
 class pFedMe(Server):
@@ -49,7 +52,6 @@ class pFedMe(Server):
             # print("Evaluate global model")
             # print("")
             self.evaluate()
-            self.save_best_model(glob_iter)
 
             # do update for all users not only selected users
             for user in self.users:
@@ -69,16 +71,64 @@ class pFedMe(Server):
             #print("Evaluate persionalized model")
             #print("")
             self.evaluate_personalized_model()
-            self.save_best_model(glob_iter, pFedMe=True)
+            self.save_best_model(glob_iter)
             #self.aggregate_parameters()
             self.persionalized_aggregate_parameters()
-            if(glob_iter % 100 == 99):
-                self.save_model(glob_iter+1)
-                self.save_results()
+            # if(glob_iter % 100 == 99):
+            #     self.save_model(glob_iter+1)
+            #     self.save_all_client_model(glob_iter+1)
+            #     self.save_results()
 
 
         #print(loss)
         self.save_results()
         self.save_model()
+        self.save_all_client_model()
     
+    def trainAllClient(self, step):
+        for user in self.users:
+            user.train(step)
   
+    def plot_graph(self):
+        acc_log = []
+        # graph_name = self.dataset + self.algorithm
+        graph_name = self.algorithm
+        if (graph_name == "FedSelf"):
+            graph_name = "LocalSelf"
+        elif (graph_name == "FedInc"):
+            graph_name = "IncFL"
+        self.send_parameters()
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, graph_name)
+        acc_log.append(acc)
+        
+        self.trainAllClient(step=1)
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, "{}(PM)1step".format(graph_name))
+        acc_log.append(acc)
+        
+        self.trainAllClient(step=4)
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, "{}(PM)5step".format(graph_name))
+        acc_log.append(acc)
+        
+        self.trainAllClient(step=5)
+        true_label, predict_label = self.test_and_get_label()
+        acc = plot_function(true_label, predict_label, "{}(PM)10step".format(graph_name))
+        acc_log.append(acc)
+        
+        plot_path = os.getenv('SAVE_PLOT_PATH')
+        if plot_path == None or plot_path == "":
+            plot_path = "plot"
+        full_path = os.path.join(plot_path, "acc_log.txt")
+        
+        with open(full_path, 'w') as f:
+            for i in acc_log:
+                f.write(i+"\n")
+                
+    def update_lr(self, learning_rate):
+        print("Update pFedMe personal lr")
+        for c in self.users:
+            c.personal_learning_rate = learning_rate
+            c.optimizer = pFedMeOptimizer(c.model.parameters(), lr=c.personal_learning_rate, lamda=c.lamda)
+        print("Finish to update pFedMe personal lr")
